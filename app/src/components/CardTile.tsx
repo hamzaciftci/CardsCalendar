@@ -59,10 +59,7 @@ export function CardTile({
         <div>
           <div className="h-1.5 w-full overflow-hidden rounded-full bg-muted">
             <div
-              className={
-                "h-full rounded-full " +
-                (utilization > 0.8 ? "bg-warning" : "bg-primary")
-              }
+              className={"h-full rounded-full " + (utilization > 0.8 ? "bg-warning" : "bg-primary")}
               style={{ width: `${Math.min(100, Math.max(0, utilization * 100))}%` }}
             />
           </div>

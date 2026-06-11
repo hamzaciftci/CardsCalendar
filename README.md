@@ -1,70 +1,51 @@
-# Kredi Kart Takvimi (KartPilot)
+# KartPilot (Kredi Kart Takvimi)
 
-Birden fazla kredi kartı olan kullanıcıya, **hangi gün hangi kartla harcarsa en uzun faizsiz süreyi elde edeceğini** söyleyen uygulama. UI Lovable'da geliştirilir; **hesaplama mantığının kaynak gerçeği (source of truth) bu depodur.**
+Birden fazla kredi kartı olan kullanıcıya, **hangi gün hangi kartla harcarsa en uzun faizsiz süreyi elde edeceğini** söyleyen uygulama. Kart numarası, CVV veya banka şifresi asla istenmez — yalnızca kesim/ödeme günleri ve isteğe bağlı limitlerle çalışır.
+
+> Bu depo bağımsızdır: geliştirme doğrudan burada yapılır. Lovable dönemi kapanmıştır; tüm Lovable bağımlılıkları kaldırılmıştır (ilk commit o dönemin anlık görüntüsünü saklar).
 
 ## Depo yapısı
 
 ```
 ├── URUN-DOKUMANI.md          # 20 bölümlük ürün dokümanı (strateji → yol haritası)
-├── lovable-starter-prompt.md # Lovable'a verilen başlangıç promptu
-├── README.md                 # bu dosya
-├── Kart Günlükleri.zip       # Lovable'dan indirilen SON dışa aktarım (arşiv)
-├── app/                      # Lovable bulut kodunun birebir yerel AYNASI
-│   └── src/engine/index.ts   #   ← kök motorun alt kümesi; ortak fonksiyonların
-│                             #     mantığı her zip'te satır satır doğrulanır
-├── engine/                   # ⭐ Hesaplama motoru — test edilen TEK doğru kopya
-│   ├── package.json
-│   ├── tsconfig.json
-│   └── src/
-│       ├── index.ts          # motor (faizsiz gün + öneri + dönem + son ödeme)
-│       └── index.test.ts     # ürün dokümanı §7.3 senaryoları + kenar durumlar
+├── lovable-starter-prompt.md # (arşiv) ilk sürümü üreten başlangıç promptu
+├── app/                      # ⭐ Uygulama — TanStack Start + React 19 + TypeScript
+│   ├── src/engine/           #   hesaplama motoru + 36 birim testi (TEK doğru kaynak)
+│   ├── src/routes/           #   Bugün · Kartlarım · Takvim · Ayarlar
+│   ├── src/components/       #   CardForm, CardTile, Onboarding + shadcn/ui
+│   └── src/lib/              #   storage (localStorage), format, SSR hata katmanı
 └── supabase/
-    └── schema.sql            # bulut senkron fazı için hazır Postgres şeması
+    └── schema.sql            # bulut senkron fazı için hazır Postgres şeması (RLS'li)
 ```
 
-> **Çalışma düzeni:** `app/` her zaman son zip'in birebir aynasıdır — yerel
-> düzeltme yapılmaz. Düzeltmeler Lovable'a mesajla yaptırılır; yeni zip inince
-> burada doğrulanır (motor mantık karşılaştırması + tip kontrolü + build).
-> Kök `engine/` paketi üst kümedir: app'te henüz kullanılmayan yardımcılar
-> (`upcomingCycles`, `cycleForMonth`, `ENGINE_VERSION`) yalnızca kökte yaşar ve
-> ihtiyaç doğunca Lovable'a taşınır. Bu ikilik GitHub senkronuyla ortadan kalkar.
-
-## Motor testlerini çalıştırma
+## Komutlar (`app/` içinde)
 
 ```powershell
-cd engine
-npm install        # ilk seferde
-npm test           # tüm senaryolar (vitest)
-npm run typecheck  # tip kontrolü (tsc)
+npm run dev        # geliştirme sunucusu → http://localhost:8080
+npm test           # motor birim testleri (36 senaryo: Şubat, artık yıl, yıl devri…)
+npm run typecheck  # tsc --noEmit
+npm run lint       # eslint (+ prettier kuralı)
+npm run format     # prettier --write
+npm run build      # production build → dist/client + dist/server (SSR)
 ```
 
-## Lovable ile çalışma kuralı
+## Mimari kurallar
 
-1. **Motor mantığını Lovable'a yazdırma/değiştirtme.** Lovable yalnızca UI üzerinde çalışır; `src/engine/index.ts` dosyasının içeriği her zaman buradaki `engine/src/index.ts` ile **birebir aynı** tutulur.
-2. Motorda değişiklik gerekirse akış şudur: önce burada değiştir → `npm test` yeşil → dosya içeriğini Lovable projesindeki `src/engine/index.ts`'e kopyala (Lovable'da Dev Mode/Code görünümünden ya da "replace the entire content of src/engine/index.ts with the following" mesajıyla).
-3. Lovable'ın motora dokunduğundan şüphelenirsen Lovable'a şu mesajı gönder:
-   > "src/engine/index.ts dosyasını sana verdiğim haline geri döndür; UI'ı ona uydur."
-4. Büyük UI değişikliklerinden sonra `lovable-starter-prompt.md` sonundaki 5 maddelik elle doğrulama listesini koştur (9/10/11 Haziran → 11/10/39 gün kontrolü vb.).
-5. Lovable projesini GitHub'a bağlamak (Lovable → GitHub sync) bu senkronu kolaylaştırır; o aşamada bu depo da git'e alınabilir.
+1. **Tarih matematiği yalnızca [app/src/engine/index.ts](app/src/engine/index.ts)'te yaşar.** Ekranlar `interestFreeDays`, `recommend`, `nextDueDate`, `cycleForMonth`, `upcomingCycles` çağırır; hiçbir route/bileşen kendi tarih hesabını kurmaz.
+2. **Motor değişikliği = önce test.** Davranış değişikliği [index.test.ts](app/src/engine/index.test.ts)'e senaryo olarak eklenir, sonra kod değişir, `npm test` yeşilken commit edilir.
+3. **Muhafazakâr hesap ilkesi:** belirsizlikte kullanıcı aleyhine yuvarla (kesim günü harcaması o ekstreye sayılır; tatil uzatması varsayılmaz).
+4. **Veri minimizasyonu:** kart numarası/CVV/şifre alanı hiçbir formda, tipte veya tabloda yer almaz.
 
-## `engine` API özeti
+## Bilinen notlar
 
-| Fonksiyon | Ne yapar |
-|---|---|
-| `interestFreeDays(card, spendDate)` | Harcamanın gireceği ekstre kesimi, son ödeme tarihi ve faizsiz gün sayısı |
-| `recommend(cards, amount, spendDate, params?)` | Sıralı öneri: `best`, `alternatives`, gerekçeli `excluded`, `waitTip` ("2 gün beklersen…") |
-| `upcomingCycles(card, fromDate, count)` | Sonraki N dönemin kesim/son ödeme tarihleri (takvim işaretleri + hatırlatma cron'u) |
-| `ENGINE_VERSION` | Simülasyon kayıtlarına yazılacak motor sürümü |
+- **Node sürümü:** TanStack Start resmî olarak Node ≥ 22.12 ister. Node 20.19 ile dev/test/build doğrulandı ve çalışıyor; yine de ilk fırsatta Node 22 LTS'e geçilmesi önerilir (`winget install OpenJS.NodeJS.LTS`).
+- **MVP veri katmanı:** misafir modu — kartlar `localStorage`'da (`kartpilot.cards.v1`). Hesap + bulut senkron fazına geçerken [supabase/schema.sql](supabase/schema.sql) Supabase SQL Editor'de bir kez çalıştırılır.
+- SSR hata yakalama katmanı ([src/server.ts](app/src/server.ts), [src/start.ts](app/src/start.ts)) Lovable'a özgü değildir, bilinçli olarak korunmuştur.
 
-Kurallar (ürün dokümanı §7): kesim günü harcaması **muhafazakâr** olarak o ekstreye sayılır; kesim günü 29/30/31 kısa aylarda ayın son gününe kısıtlanır; tüm tarihler günün başına normalize edilir; sabit "son ödeme günü" değil `graceDays` saklanır.
+## Sıradaki adımlar (ürün dokümanı §20 ile hizalı)
 
-## Supabase şeması ne zaman uygulanır?
-
-MVP **misafir modda (localStorage)** çalışır — Supabase'e şimdi ihtiyaç yok. Hesap + bulut senkron özelliğine geçerken [supabase/schema.sql](supabase/schema.sql) dosyası Supabase SQL Editor'de bir kez çalıştırılır. Şemada RLS tüm tablolarda açıktır ve kart numarası/CVV alanı bilinçli olarak yoktur.
-
-## Sıradaki adımlar
-
-- [ ] Lovable çıktısında 5 maddelik doğrulama listesini koş
-- [ ] Lovable ↔ GitHub senkronu kurulunca bu depoyu da git'e al
-- [ ] Faz 1.5: Supabase projesi aç (EU/Frankfurt), `schema.sql`'i uygula, magic link auth'u aç
-- [ ] Faz 2: bildirim cron'u (pg_cron + Edge Function) — şema sonundaki nota bak
+- [ ] GitHub'a remote ekle ve push'la (depo hazır: `git remote add origin … && git push -u origin master`)
+- [ ] Deploy hedefi seç (Vercel/Netlify/Node) ve CI'da `test + typecheck + build` koş
+- [ ] PWA manifesti + ikonlar (telefona eklenebilirlik)
+- [ ] Faz 1.5: Supabase projesi (EU/Frankfurt) + magic link auth + senkron
+- [ ] Faz 2: push bildirimleri, ekstre/borç takibi, Expo değerlendirmesi

@@ -5,7 +5,11 @@ import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 import { Switch } from "@/components/ui/switch";
 import {
-  Select, SelectContent, SelectItem, SelectTrigger, SelectValue,
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
 } from "@/components/ui/select";
 import { PRESET_COLORS, TR_BANKS, computeGraceDays, dueDayFromStatement } from "@/lib/storage";
 import { Lock } from "lucide-react";
@@ -80,16 +84,24 @@ export function CardForm({
       <div className="flex items-start gap-2 rounded-xl bg-success/10 p-3 text-[12px] text-success-foreground/90">
         <Lock className="mt-0.5 h-4 w-4 flex-none text-success" />
         <p>
-          <span className="font-semibold text-success">Bu formda kart numarası alanı yok — bilerek.</span>{" "}
+          <span className="font-semibold text-success">
+            Bu formda kart numarası alanı yok — bilerek.
+          </span>{" "}
           Kart numaranı, CVV'ni, banka şifreni asla istemeyiz.
         </p>
       </div>
 
       <Field label="Banka">
         <Select value={bankName} onValueChange={setBankName}>
-          <SelectTrigger><SelectValue /></SelectTrigger>
+          <SelectTrigger>
+            <SelectValue />
+          </SelectTrigger>
           <SelectContent>
-            {TR_BANKS.map((b) => <SelectItem key={b} value={b}>{b}</SelectItem>)}
+            {TR_BANKS.map((b) => (
+              <SelectItem key={b} value={b}>
+                {b}
+              </SelectItem>
+            ))}
           </SelectContent>
         </Select>
       </Field>
@@ -109,13 +121,13 @@ export function CardForm({
         >
           <DayPicker value={statementDay} onChange={setStatementDay} />
         </Field>
-        <Field
-          label="Son ödeme günü"
-          helper="Çoğu bankada son ödeme, kesimden 10 gün sonradır."
-        >
+        <Field label="Son ödeme günü" helper="Çoğu bankada son ödeme, kesimden 10 gün sonradır.">
           <DayPicker
             value={dueDay}
-            onChange={(v) => { setDueDay(v); setDueTouched(true); }}
+            onChange={(v) => {
+              setDueDay(v);
+              setDueTouched(true);
+            }}
           />
         </Field>
       </div>
@@ -126,10 +138,20 @@ export function CardForm({
 
       <div className="grid grid-cols-2 gap-3">
         <Field label="Toplam limit (₺) — opsiyonel">
-          <Input inputMode="numeric" value={totalLimit} onChange={(e) => setTotalLimit(e.target.value.replace(/\D/g, ""))} placeholder="0" />
+          <Input
+            inputMode="numeric"
+            value={totalLimit}
+            onChange={(e) => setTotalLimit(e.target.value.replace(/\D/g, ""))}
+            placeholder="0"
+          />
         </Field>
         <Field label="Kullanılabilir limit (₺) — opsiyonel">
-          <Input inputMode="numeric" value={availableLimit} onChange={(e) => setAvailableLimit(e.target.value.replace(/\D/g, ""))} placeholder="0" />
+          <Input
+            inputMode="numeric"
+            value={availableLimit}
+            onChange={(e) => setAvailableLimit(e.target.value.replace(/\D/g, ""))}
+            placeholder="0"
+          />
         </Field>
       </div>
 
@@ -160,7 +182,10 @@ export function CardForm({
       </div>
 
       {warnings.map((w, i) => (
-        <p key={i} className="rounded-xl bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground">
+        <p
+          key={i}
+          className="rounded-xl bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground"
+        >
           {w}
         </p>
       ))}
@@ -171,14 +196,26 @@ export function CardForm({
       ))}
 
       <div className="flex gap-2 pt-2">
-        <Button variant="outline" className="flex-1" onClick={onCancel}>İptal</Button>
-        <Button className="flex-1" onClick={submit} disabled={!canSave}>{submitLabel}</Button>
+        <Button variant="outline" className="flex-1" onClick={onCancel}>
+          İptal
+        </Button>
+        <Button className="flex-1" onClick={submit} disabled={!canSave}>
+          {submitLabel}
+        </Button>
       </div>
     </div>
   );
 }
 
-function Field({ label, helper, children }: { label: string; helper?: string; children: React.ReactNode }) {
+function Field({
+  label,
+  helper,
+  children,
+}: {
+  label: string;
+  helper?: string;
+  children: React.ReactNode;
+}) {
   return (
     <div className="space-y-1.5">
       <Label className="text-[12px] font-medium text-muted-foreground">{label}</Label>
@@ -191,10 +228,14 @@ function Field({ label, helper, children }: { label: string; helper?: string; ch
 function DayPicker({ value, onChange }: { value: number; onChange: (n: number) => void }) {
   return (
     <Select value={String(value)} onValueChange={(v) => onChange(Number(v))}>
-      <SelectTrigger><SelectValue /></SelectTrigger>
+      <SelectTrigger>
+        <SelectValue />
+      </SelectTrigger>
       <SelectContent className="max-h-72">
         {Array.from({ length: 31 }, (_, i) => i + 1).map((d) => (
-          <SelectItem key={d} value={String(d)}>{d}</SelectItem>
+          <SelectItem key={d} value={String(d)}>
+            {d}
+          </SelectItem>
         ))}
       </SelectContent>
     </Select>

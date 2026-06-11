@@ -1,8 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Card } from "@/engine";
-import {
-  loadCards, saveCards, hasSeeded, markSeeded, seedDemoCards,
-} from "@/lib/storage";
+import { loadCards, saveCards, hasSeeded, markSeeded, seedDemoCards } from "@/lib/storage";
 
 export function useCards() {
   const [cards, setCards] = useState<Card[]>([]);
@@ -24,17 +22,26 @@ export function useCards() {
     saveCards(next);
   }, []);
 
-  const addCard = useCallback((c: Card) => {
-    update([...loadCards(), c]);
-  }, [update]);
+  const addCard = useCallback(
+    (c: Card) => {
+      update([...loadCards(), c]);
+    },
+    [update],
+  );
 
-  const editCard = useCallback((c: Card) => {
-    update(loadCards().map((x) => (x.id === c.id ? c : x)));
-  }, [update]);
+  const editCard = useCallback(
+    (c: Card) => {
+      update(loadCards().map((x) => (x.id === c.id ? c : x)));
+    },
+    [update],
+  );
 
-  const removeCard = useCallback((id: string) => {
-    update(loadCards().filter((x) => x.id !== id));
-  }, [update]);
+  const removeCard = useCallback(
+    (id: string) => {
+      update(loadCards().filter((x) => x.id !== id));
+    },
+    [update],
+  );
 
   return { cards, ready, addCard, editCard, removeCard, setCards: update };
 }

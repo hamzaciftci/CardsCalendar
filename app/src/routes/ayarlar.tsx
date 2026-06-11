@@ -5,9 +5,14 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { clearAll } from "@/lib/storage";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Download, ShieldCheck, Trash2 } from "lucide-react";
 
@@ -15,7 +20,10 @@ export const Route = createFileRoute("/ayarlar")({
   head: () => ({
     meta: [
       { title: "Ayarlar — KartPilot" },
-      { name: "description", content: "Verilerini indir veya sil. Veri sözümüz ve sorumluluk reddini oku." },
+      {
+        name: "description",
+        content: "Verilerini indir veya sil. Veri sözümüz ve sorumluluk reddini oku.",
+      },
       { property: "og:title", content: "Ayarlar — KartPilot" },
       { property: "og:description", content: "Veri sözümüz, indirme ve silme." },
     ],
@@ -47,7 +55,9 @@ function SettingsPage() {
       <PageHeader title="Ayarlar" />
 
       <section className="mx-5 space-y-2">
-        <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">Veriler</p>
+        <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
+          Veriler
+        </p>
         <div className="rounded-2xl bg-surface p-4 shadow-soft space-y-2">
           <Button variant="outline" className="w-full justify-start" onClick={download}>
             <Download className="mr-2 h-4 w-4" /> Verilerimi indir (JSON)
@@ -73,13 +83,16 @@ function SettingsPage() {
             </div>
             <div className="space-y-2 text-[13px] leading-relaxed">
               <p>
-                <span className="font-semibold">Ne topluyoruz?</span> Kart adı, banka, kesim ve ödeme günleri, istersen limitler.
+                <span className="font-semibold">Ne topluyoruz?</span> Kart adı, banka, kesim ve
+                ödeme günleri, istersen limitler.
               </p>
               <p>
-                <span className="font-semibold">Ne toplamıyoruz?</span> Kart numarası, CVV, şifre, SMS.
+                <span className="font-semibold">Ne toplamıyoruz?</span> Kart numarası, CVV, şifre,
+                SMS.
               </p>
               <p className="text-muted-foreground">
-                Bu uygulamayla kartından harcama yapılamaz — çünkü harcamaya yarayan hiçbir bilgi bizde yok.
+                Bu uygulamayla kartından harcama yapılamaz — çünkü harcamaya yarayan hiçbir bilgi
+                bizde yok.
               </p>
             </div>
           </div>
@@ -91,7 +104,8 @@ function SettingsPage() {
           Sorumluluk Reddi
         </p>
         <div className="mt-2 rounded-2xl bg-surface p-4 text-[12px] leading-relaxed text-muted-foreground shadow-soft">
-          KartPilot bir bankacılık veya finansal danışmanlık hizmeti değildir. Hesaplamalar girdiğiniz tarihlere dayanan tahminlerdir; bankanızın ekstresi esastır.
+          KartPilot bir bankacılık veya finansal danışmanlık hizmeti değildir. Hesaplamalar
+          girdiğiniz tarihlere dayanan tahminlerdir; bankanızın ekstresi esastır.
         </div>
       </section>
 

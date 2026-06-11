@@ -36,10 +36,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
-      <button
-        onClick={finish}
-        className="absolute right-5 top-5 text-sm text-muted-foreground"
-      >
+      <button onClick={finish} className="absolute right-5 top-5 text-sm text-muted-foreground">
         Geç
       </button>
       <div className="flex flex-1 flex-col items-center justify-center px-8 text-center">

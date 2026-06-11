@@ -5,14 +5,30 @@ const ONBOARD_KEY = "kartpilot.onboarded.v1";
 const SEED_KEY = "kartpilot.seeded.v1";
 
 export const PRESET_COLORS = [
-  "#1E5AF5", "#16C784", "#F5A623", "#E5484D",
-  "#8B5CF6", "#EC4899", "#0EA5E9", "#0F172A",
+  "#1E5AF5",
+  "#16C784",
+  "#F5A623",
+  "#E5484D",
+  "#8B5CF6",
+  "#EC4899",
+  "#0EA5E9",
+  "#0F172A",
 ];
 
 export const TR_BANKS = [
-  "Akbank", "Garanti BBVA", "İş Bankası", "Yapı Kredi", "QNB",
-  "Ziraat", "Halkbank", "VakıfBank", "DenizBank", "TEB",
-  "ING", "Enpara", "Diğer",
+  "Akbank",
+  "Garanti BBVA",
+  "İş Bankası",
+  "Yapı Kredi",
+  "QNB",
+  "Ziraat",
+  "Halkbank",
+  "VakıfBank",
+  "DenizBank",
+  "TEB",
+  "ING",
+  "Enpara",
+  "Diğer",
 ];
 
 export function loadCards(): Card[] {

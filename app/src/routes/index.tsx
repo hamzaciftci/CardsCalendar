@@ -7,7 +7,13 @@ import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { recommend, normalize, diffInDays, nextDueDate } from "@/engine";
-import { formatLongDate, formatMonthYear, formatTRY, toDateInputValue, fromDateInputValue } from "@/lib/format";
+import {
+  formatLongDate,
+  formatMonthYear,
+  formatTRY,
+  toDateInputValue,
+  fromDateInputValue,
+} from "@/lib/format";
 import { isOnboarded } from "@/lib/storage";
 import { AlertTriangle, Plus, Sparkles } from "lucide-react";
 
@@ -15,9 +21,15 @@ export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
       { title: "KartPilot — Bugünün kartı" },
-      { name: "description", content: "Bugün hangi kartla harcaman gerektiğini saniyeler içinde öğren." },
+      {
+        name: "description",
+        content: "Bugün hangi kartla harcaman gerektiğini saniyeler içinde öğren.",
+      },
       { property: "og:title", content: "KartPilot — Bugünün kartı" },
-      { property: "og:description", content: "Bugün hangi kartla harcaman gerektiğini saniyeler içinde öğren." },
+      {
+        property: "og:description",
+        content: "Bugün hangi kartla harcaman gerektiğini saniyeler içinde öğren.",
+      },
     ],
   }),
   component: TodayPage,
@@ -69,7 +81,9 @@ function TodayPage() {
           <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
             <Sparkles className="h-7 w-7 text-primary" />
           </div>
-          <h2 className="text-lg font-semibold">Kartlarını ekle, hangi gün hangi kartla harcayacağını söyleyelim.</h2>
+          <h2 className="text-lg font-semibold">
+            Kartlarını ekle, hangi gün hangi kartla harcayacağını söyleyelim.
+          </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Sadece kart adı, banka ve tarihler. Numara, CVV, şifre yok.
           </p>
@@ -83,21 +97,26 @@ function TodayPage() {
 
   return (
     <div className="pb-8">
-      <PageHeader
-        title="Bugün"
-        subtitle={formatLongDate(new Date())}
-      />
+      <PageHeader title="Bugün" subtitle={formatLongDate(new Date())} />
 
       {upcomingDues.length > 0 && (
         <div className="mx-5 mb-4 space-y-2">
           {upcomingDues.map(({ card, days }) => (
-            <div key={card.id} className="flex items-center gap-2 rounded-xl bg-warning/15 px-3 py-2.5 text-[13px] text-warning-foreground">
+            <div
+              key={card.id}
+              className="flex items-center gap-2 rounded-xl bg-warning/15 px-3 py-2.5 text-[13px] text-warning-foreground"
+            >
               <AlertTriangle className="h-4 w-4 flex-none text-warning" />
               <p>
                 {days === 0 ? (
-                  <>Bugün son ödeme günü: <span className="font-semibold">{card.name}</span></>
+                  <>
+                    Bugün son ödeme günü: <span className="font-semibold">{card.name}</span>
+                  </>
                 ) : (
-                  <>Son ödemeye <span className="font-semibold tabular">{days} gün</span>: {card.name}</>
+                  <>
+                    Son ödemeye <span className="font-semibold tabular">{days} gün</span>:{" "}
+                    {card.name}
+                  </>
                 )}
               </p>
             </div>
@@ -135,10 +154,15 @@ function TodayPage() {
             <button
               key={v}
               type="button"
-              onClick={() => { setAmountStr(String(v)); setCalculated(false); }}
+              onClick={() => {
+                setAmountStr(String(v));
+                setCalculated(false);
+              }}
               className={
                 "rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
-                (amountStr === String(v) ? "border-primary bg-primary/10 text-primary" : "border-border bg-background text-foreground")
+                (amountStr === String(v)
+                  ? "border-primary bg-primary/10 text-primary"
+                  : "border-border bg-background text-foreground")
               }
             >
               {formatTRY(v)}
@@ -146,7 +170,10 @@ function TodayPage() {
           ))}
           <button
             type="button"
-            onClick={() => { setAmountStr(""); setCalculated(false); }}
+            onClick={() => {
+              setAmountStr("");
+              setCalculated(false);
+            }}
             className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium"
           >
             Diğer
@@ -158,7 +185,10 @@ function TodayPage() {
             inputMode="numeric"
             placeholder="Tutar (₺)"
             value={amountStr}
-            onChange={(e) => { setAmountStr(e.target.value.replace(/\D/g, "")); setCalculated(false); }}
+            onChange={(e) => {
+              setAmountStr(e.target.value.replace(/\D/g, ""));
+              setCalculated(false);
+            }}
             className="h-11 text-base tabular"
           />
           <input
@@ -203,7 +233,10 @@ function TodayPage() {
                 {formatMonthYear(result.best.result.cutoffDate)} ekstresine yansır.
               </p>
               {result.best.warnings.map((w, i) => (
-                <p key={i} className="mt-2 rounded-lg bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground">
+                <p
+                  key={i}
+                  className="mt-2 rounded-lg bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground"
+                >
                   {w}
                 </p>
               ))}
@@ -223,10 +256,15 @@ function TodayPage() {
                 {result.alternatives.map((a) => (
                   <li key={a.card.id} className="flex items-center justify-between py-2.5">
                     <div className="flex items-center gap-2 min-w-0">
-                      <span className="h-2.5 w-2.5 flex-none rounded-full" style={{ backgroundColor: a.card.color }} />
+                      <span
+                        className="h-2.5 w-2.5 flex-none rounded-full"
+                        style={{ backgroundColor: a.card.color }}
+                      />
                       <p className="truncate text-sm">{a.card.name}</p>
                     </div>
-                    <p className="text-sm font-semibold text-success tabular">{a.result.days} gün</p>
+                    <p className="text-sm font-semibold text-success tabular">
+                      {a.result.days} gün
+                    </p>
                   </li>
                 ))}
               </ul>
@@ -239,7 +277,10 @@ function TodayPage() {
                 <span className="font-semibold text-primary">İpucu:</span>{" "}
                 {diffInDays(result.waitTip.date, spendDate)} gün beklersen{" "}
                 <span className="font-semibold">{result.waitTip.card.name}</span> ile{" "}
-                <span className="font-semibold text-success tabular">{result.waitTip.days} gün</span> faizsiz kullanabilirsin.
+                <span className="font-semibold text-success tabular">
+                  {result.waitTip.days} gün
+                </span>{" "}
+                faizsiz kullanabilirsin.
               </p>
             </div>
           )}
@@ -252,7 +293,8 @@ function TodayPage() {
               <ul className="space-y-1.5">
                 {result.excluded.map((e) => (
                   <li key={e.card.id} className="text-[13px] text-muted-foreground">
-                    <span className="font-medium text-foreground/70">{e.card.name}</span> — {e.reason}
+                    <span className="font-medium text-foreground/70">{e.card.name}</span> —{" "}
+                    {e.reason}
                   </li>
                 ))}
               </ul>

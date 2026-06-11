@@ -2,7 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useCards } from "@/hooks/use-cards";
 import { PageHeader } from "@/components/PageHeader";
-import { recommend, normalize, addDays } from "@/engine";
+import { recommend, normalize, cycleForMonth } from "@/engine";
 import { formatLongDate, monthName, shortWeekdays } from "@/lib/format";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { Button } from "@/components/ui/button";
@@ -12,17 +12,16 @@ export const Route = createFileRoute("/takvim")({
   head: () => ({
     meta: [
       { title: "Takvim — KartPilot" },
-      { name: "description", content: "Kesim ve son ödeme günlerini aylık takvimde gör; her güne en iyi kartı bul." },
+      {
+        name: "description",
+        content: "Kesim ve son ödeme günlerini aylık takvimde gör; her güne en iyi kartı bul.",
+      },
       { property: "og:title", content: "Takvim — KartPilot" },
       { property: "og:description", content: "Kesim ve son ödeme günlerini takvimde gör." },
     ],
   }),
   component: CalendarPage,
 });
-
-function clamp(year: number, month: number, day: number): number {
-  return Math.min(day, new Date(year, month + 1, 0).getDate());
-}
 
 function CalendarPage() {
   const { cards, ready } = useCards();
@@ -36,25 +35,22 @@ function CalendarPage() {
     const map = new Map<number, { statement: Card[]; due: Card[] }>();
     const get = (d: number) => {
       let e = map.get(d);
-      if (!e) { e = { statement: [], due: [] }; map.set(d, e); }
+      if (!e) {
+        e = { statement: [], due: [] };
+        map.set(d, e);
+      }
       return e;
     };
     for (const c of cards) {
       if (!c.isActive) continue;
-      const sd = clamp(year, month, c.statementDay);
-      get(sd).statement.push(c);
-      // due may roll into next month — only show if in current month
-      const dueDate = new Date(year, month, sd + c.graceDays);
-      if (dueDate.getMonth() === month) get(dueDate.getDate()).due.push(c);
-      else {
-        // also show previous month's due that lands in current month
-      }
-      // previous month's statement → due might fall into current month
-      const prev = new Date(year, month - 1, 1);
-      const pSd = clamp(prev.getFullYear(), prev.getMonth(), c.statementDay);
-      const pDue = new Date(prev.getFullYear(), prev.getMonth(), pSd + c.graceDays);
-      if (pDue.getFullYear() === year && pDue.getMonth() === month) {
-        get(pDue.getDate()).due.push(c);
+      // tüm tarih matematiği motorda: bu ayın kesimi + bu aya düşen son ödemeler
+      const current = cycleForMonth(c, year, month);
+      get(current.cutoffDate.getDate()).statement.push(c);
+      // bu aya düşen son ödeme, bu ayın ya da önceki ayın kesiminden gelir
+      for (const cycle of [cycleForMonth(c, year, month - 1), current]) {
+        if (cycle.dueDate.getFullYear() === year && cycle.dueDate.getMonth() === month) {
+          get(cycle.dueDate.getDate()).due.push(c);
+        }
       }
     }
     return map;
@@ -77,9 +73,10 @@ function CalendarPage() {
   for (let d = 1; d <= daysInMonth; d++) cells.push(d);
   while (cells.length % 7 !== 0) cells.push(null);
 
-  const selectedEvents = selected.getFullYear() === year && selected.getMonth() === month
-    ? events.get(selected.getDate())
-    : undefined;
+  const selectedEvents =
+    selected.getFullYear() === year && selected.getMonth() === month
+      ? events.get(selected.getDate())
+      : undefined;
 
   return (
     <div className="pb-8">
@@ -87,17 +84,29 @@ function CalendarPage() {
 
       <div className="mx-5 rounded-2xl bg-surface p-4 shadow-soft">
         <div className="flex items-center justify-between">
-          <Button variant="ghost" size="icon" onClick={() => setCursor(new Date(year, month - 1, 1))}>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCursor(new Date(year, month - 1, 1))}
+          >
             <ChevronLeft className="h-5 w-5" />
           </Button>
-          <p className="text-base font-semibold">{monthName(month)} {year}</p>
-          <Button variant="ghost" size="icon" onClick={() => setCursor(new Date(year, month + 1, 1))}>
+          <p className="text-base font-semibold">
+            {monthName(month)} {year}
+          </p>
+          <Button
+            variant="ghost"
+            size="icon"
+            onClick={() => setCursor(new Date(year, month + 1, 1))}
+          >
             <ChevronRight className="h-5 w-5" />
           </Button>
         </div>
 
         <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-muted-foreground">
-          {shortWeekdays().map((d) => <div key={d}>{d}</div>)}
+          {shortWeekdays().map((d) => (
+            <div key={d}>{d}</div>
+          ))}
         </div>
         <div className="mt-1 grid grid-cols-7 gap-1">
           {cells.map((d, i) => {
@@ -112,18 +121,29 @@ function CalendarPage() {
                 onClick={() => setSelected(date)}
                 className={
                   "relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm tabular transition " +
-                  (isSelected ? "bg-primary text-primary-foreground font-semibold" :
-                   isToday ? "bg-primary/10 text-primary font-semibold" : "hover:bg-muted")
+                  (isSelected
+                    ? "bg-primary text-primary-foreground font-semibold"
+                    : isToday
+                      ? "bg-primary/10 text-primary font-semibold"
+                      : "hover:bg-muted")
                 }
               >
                 <span>{d}</span>
-                {e && (e.statement.length + e.due.length) > 0 && (
+                {e && e.statement.length + e.due.length > 0 && (
                   <span className="absolute bottom-1 flex gap-0.5">
                     {e.statement.slice(0, 3).map((c, idx) => (
-                      <span key={"s"+idx} className="block h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-l-transparent border-r-transparent" style={{ borderBottomColor: c.color }} />
+                      <span
+                        key={"s" + idx}
+                        className="block h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-l-transparent border-r-transparent"
+                        style={{ borderBottomColor: c.color }}
+                      />
                     ))}
                     {e.due.slice(0, 3).map((c, idx) => (
-                      <span key={"d"+idx} className="block h-1.5 w-1.5 rounded-full" style={{ backgroundColor: c.color }} />
+                      <span
+                        key={"d" + idx}
+                        className="block h-1.5 w-1.5 rounded-full"
+                        style={{ backgroundColor: c.color }}
+                      />
                     ))}
                   </span>
                 )}
@@ -149,16 +169,19 @@ function CalendarPage() {
           {formatLongDate(selected)}
         </p>
 
-        {selectedEvents && (selectedEvents.statement.length + selectedEvents.due.length) > 0 ? (
+        {selectedEvents && selectedEvents.statement.length + selectedEvents.due.length > 0 ? (
           <ul className="mt-2 space-y-1.5">
             {selectedEvents.statement.map((c) => (
-              <li key={"s"+c.id} className="flex items-center gap-2 text-[13px]">
-                <span className="block h-0 w-0 border-l-[4px] border-r-[4px] border-b-[6px] border-l-transparent border-r-transparent" style={{ borderBottomColor: c.color }} />
+              <li key={"s" + c.id} className="flex items-center gap-2 text-[13px]">
+                <span
+                  className="block h-0 w-0 border-l-[4px] border-r-[4px] border-b-[6px] border-l-transparent border-r-transparent"
+                  style={{ borderBottomColor: c.color }}
+                />
                 <span>{c.name} — kesim günü</span>
               </li>
             ))}
             {selectedEvents.due.map((c) => (
-              <li key={"d"+c.id} className="flex items-center gap-2 text-[13px]">
+              <li key={"d" + c.id} className="flex items-center gap-2 text-[13px]">
                 <span className="block h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
                 <span>{c.name} — son ödeme</span>
               </li>
@@ -172,7 +195,9 @@ function CalendarPage() {
           <p className="mt-3 rounded-xl bg-success/10 px-3 py-2 text-[13px]">
             Bu gün harcamak için en iyi kart:{" "}
             <span className="font-semibold">{selectedRec.best.card.name}</span>{" "}
-            <span className="font-semibold text-success tabular">({selectedRec.best.result.days} gün)</span>
+            <span className="font-semibold text-success tabular">
+              ({selectedRec.best.result.days} gün)
+            </span>
           </p>
         )}
       </div>

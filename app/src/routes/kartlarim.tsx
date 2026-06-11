@@ -8,9 +8,14 @@ import { CardForm } from "@/components/CardForm";
 import { Button } from "@/components/ui/button";
 import { Sheet, SheetContent, SheetHeader, SheetTitle } from "@/components/ui/sheet";
 import {
-  AlertDialog, AlertDialogAction, AlertDialogCancel,
-  AlertDialogContent, AlertDialogDescription, AlertDialogFooter,
-  AlertDialogHeader, AlertDialogTitle,
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
 import { Plus, Trash2 } from "lucide-react";
 
@@ -18,9 +23,15 @@ export const Route = createFileRoute("/kartlarim")({
   head: () => ({
     meta: [
       { title: "Kartlarım — KartPilot" },
-      { name: "description", content: "Kart adı, banka ve tarihlerinle kartlarını yönet — numara/CVV asla istemiyoruz." },
+      {
+        name: "description",
+        content: "Kart adı, banka ve tarihlerinle kartlarını yönet — numara/CVV asla istemiyoruz.",
+      },
       { property: "og:title", content: "Kartlarım — KartPilot" },
-      { property: "og:description", content: "Kartlarını ekle ve düzenle. Numara, CVV, şifre yok." },
+      {
+        property: "og:description",
+        content: "Kartlarını ekle ve düzenle. Numara, CVV, şifre yok.",
+      },
     ],
   }),
   component: CardsPage,
@@ -34,8 +45,14 @@ function CardsPage() {
 
   if (!ready) return null;
 
-  const openNew = () => { setEditing(undefined); setSheetOpen(true); };
-  const openEdit = (c: Card) => { setEditing(c); setSheetOpen(true); };
+  const openNew = () => {
+    setEditing(undefined);
+    setSheetOpen(true);
+  };
+  const openEdit = (c: Card) => {
+    setEditing(c);
+    setSheetOpen(true);
+  };
 
   return (
     <div className="pb-8">
@@ -56,7 +73,9 @@ function CardsPage() {
         {cards.length === 0 && (
           <div className="rounded-2xl bg-surface p-6 text-center shadow-soft">
             <p className="text-sm text-muted-foreground">Henüz kart eklemedin.</p>
-            <Button onClick={openNew} className="mt-4">İlk kartını ekle</Button>
+            <Button onClick={openNew} className="mt-4">
+              İlk kartını ekle
+            </Button>
           </div>
         )}
       </div>

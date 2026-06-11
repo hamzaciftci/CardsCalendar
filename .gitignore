@@ -1,0 +1,23 @@
+# bağımlılıklar ve build çıktıları
+node_modules/
+dist/
+dist-ssr/
+.output/
+.nitro/
+.tanstack/
+.wrangler/
+
+# ortam ve yerel dosyalar
+.env
+.env.*
+*.local
+*.log
+
+# arşivler (Lovable dönemi dışa aktarımları)
+*.zip
+
+# editör/işletim sistemi
+.DS_Store
+.idea/
+.vscode/*
+!.vscode/extensions.json

@@ -53,8 +53,9 @@ npm run build      # production build → dist/client + dist/server (SSR)
 
 ## Sıradaki adımlar (ürün dokümanı §20 ile hizalı)
 
-- [x] GitHub'a push'landı → [hamzaciftci/CardsCalendar-](https://github.com/hamzaciftci/CardsCalendar-)
-- [ ] Vercel kurulumu (notlar aşağıda) ve CI'da `test + typecheck + build` koş
+- [x] GitHub'a push'landı → [hamzaciftci/CardsCalendar](https://github.com/hamzaciftci/CardsCalendar)
+- [x] Vercel'de canlı → **<https://cards-calendar.vercel.app>** (Root Directory: `app`, nitro `vercel` preset)
+- [ ] CI'da `test + typecheck + build` koş (GitHub Actions)
 - [ ] PWA manifesti + ikonlar (telefona eklenebilirlik)
 - [ ] Faz 1.5: Supabase projesi (EU/Frankfurt) + magic link auth + senkron
 - [ ] Faz 2: push bildirimleri, ekstre/borç takibi, Expo değerlendirmesi

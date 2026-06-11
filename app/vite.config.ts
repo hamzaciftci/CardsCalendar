@@ -2,9 +2,10 @@ import { defineConfig } from "vite";
 import tailwindcss from "@tailwindcss/vite";
 import tsConfigPaths from "vite-tsconfig-paths";
 import { tanstackStart } from "@tanstack/react-start/plugin/vite";
+import { nitro } from "nitro/vite";
 import viteReact from "@vitejs/plugin-react";
 
-export default defineConfig({
+export default defineConfig(({ command }) => ({
   plugins: [
     tailwindcss(),
     tsConfigPaths({ projects: ["./tsconfig.json"] }),
@@ -19,6 +20,9 @@ export default defineConfig({
         },
       },
     }),
+    // Deploy paketleyici: SSR'ı Vercel serverless fonksiyonuna, statikleri CDN'e
+    // çıkarır (.vercel/output). Dev sunucusuna gerekmediği için yalnızca build'de.
+    ...(command === "build" ? [nitro({ preset: "vercel" })] : []),
     viteReact(),
   ],
   // Dev ve build aynı CSS hattını kullansın (PostCSS/esbuild farkı sürpriz üretmesin)
@@ -35,4 +39,4 @@ export default defineConfig({
     ],
   },
   server: { port: 8080 },
-});
+}));

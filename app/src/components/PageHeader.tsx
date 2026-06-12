@@ -15,9 +15,7 @@ export function PageHeader({
         <p className="tabular text-[10px] uppercase tracking-[0.32em] text-muted-foreground/80">
           KartPilot
         </p>
-        <h1 className="mt-1.5 text-[28px] font-bold leading-none tracking-tight lg:text-4xl">
-          {title}
-        </h1>
+        <h1 className="font-display mt-1.5 text-[34px] leading-none lg:text-[44px]">{title}</h1>
         {subtitle && <p className="tabular mt-2 text-[13px] text-muted-foreground">{subtitle}</p>}
       </div>
       {right}

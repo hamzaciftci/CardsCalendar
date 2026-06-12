@@ -127,7 +127,7 @@ function CalendarPage() {
                   className={
                     "tabular relative flex aspect-square flex-col items-center justify-center rounded-xl text-sm transition-[color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] " +
                     (isSelected
-                      ? "bg-primary font-semibold text-primary-foreground shadow-[0_0_12px_rgb(89_168_255_/_0.3)]"
+                      ? "bg-primary font-semibold text-primary-foreground"
                       : isToday
                         ? "font-semibold text-primary ring-1 ring-inset ring-primary/60"
                         : "hover:bg-muted/70")
@@ -140,14 +140,14 @@ function CalendarPage() {
                         <span
                           key={"s" + idx}
                           className="block h-0 w-0 border-b-[5px] border-l-[3.5px] border-r-[3.5px] border-l-transparent border-r-transparent"
-                          style={{ borderBottomColor: isSelected ? "#04101f" : c.color }}
+                          style={{ borderBottomColor: isSelected ? "#ffffff" : c.color }}
                         />
                       ))}
                       {e.due.slice(0, 3).map((c, idx) => (
                         <span
                           key={"d" + idx}
                           className="block h-1.5 w-1.5 rounded-full"
-                          style={{ backgroundColor: isSelected ? "#04101f" : c.color }}
+                          style={{ backgroundColor: isSelected ? "#ffffff" : c.color }}
                         />
                       ))}
                     </span>

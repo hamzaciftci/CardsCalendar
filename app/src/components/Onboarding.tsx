@@ -14,21 +14,18 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   const slides = [
     {
       icon: <Compass className="h-14 w-14 text-primary" />,
-      glow: "shadow-[0_0_40px_rgb(89_168_255_/_0.2)]",
       title: "Hangi kartla ne zaman?",
       body: "KartPilot, her güne en uzun faizsiz süreyi öneren küçük asistanın. Kart ekle, sor, kazan.",
       cta: "Devam et",
     },
     {
       icon: <ShieldCheck className="h-14 w-14 text-success" />,
-      glow: "shadow-[0_0_40px_rgb(43_227_164_/_0.2)]",
       title: "Kart numaranı asla istemiyoruz",
       body: "Bu uygulama harcama yapamaz, çünkü harcamaya yarayan hiçbir bilgiyi tutmuyor. Sadece kart adı, banka ve tarihler — o kadar.",
       cta: "Anladım",
     },
     {
       icon: <CreditCard className="h-14 w-14 text-primary" />,
-      glow: "shadow-[0_0_40px_rgb(89_168_255_/_0.2)]",
       title: "Hadi başlayalım",
       body: "Üç örnek kartla başlattık. Düzenleyebilir, silebilir ya da kendi kartlarını ekleyebilirsin.",
       cta: "İlk kartını ekle",
@@ -49,9 +46,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         key={step}
         className="animate-rise flex flex-1 flex-col items-center justify-center px-8 text-center"
       >
-        <div
-          className={`mb-7 flex h-28 w-28 items-center justify-center rounded-3xl border border-border bg-surface ${s.glow}`}
-        >
+        <div className="shadow-soft mb-7 flex h-28 w-28 items-center justify-center rounded-3xl border border-border bg-surface">
           {s.icon}
         </div>
         <h2 className="max-w-sm text-[26px] font-bold leading-tight tracking-tight">{s.title}</h2>
@@ -64,9 +59,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
               key={i}
               className={
                 "h-1.5 rounded-full transition-[width,background-color,box-shadow] duration-200 ease-out " +
-                (i === step
-                  ? "w-7 bg-primary shadow-[0_0_8px_rgb(89_168_255_/_0.4)]"
-                  : "w-1.5 bg-muted")
+                (i === step ? "w-7 bg-primary" : "w-1.5 bg-border")
               }
             />
           ))}

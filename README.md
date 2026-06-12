@@ -42,6 +42,27 @@ npm run build      # production build → dist/client + dist/server (SSR)
 - **MVP veri katmanı:** misafir modu — kartlar `localStorage`'da (`kartpilot.cards.v1`). Hesap + bulut senkron fazına geçerken [supabase/schema.sql](supabase/schema.sql) Supabase SQL Editor'de bir kez çalıştırılır.
 - SSR hata yakalama katmanı ([src/server.ts](app/src/server.ts), [src/start.ts](app/src/start.ts)) Lovable'a özgü değildir, bilinçli olarak korunmuştur.
 
+## SaaS / Bulut senkron kurulumu (Supabase)
+
+Uygulama env değişkenleri olmadan **misafir modda** çalışır (localStorage).
+Hesap + cihazlar arası senkronu açmak için:
+
+1. [supabase.com](https://supabase.com) → **New Project** (bölge: `eu-central-1` Frankfurt — KVKK notu için).
+2. **SQL Editor** → depodaki [supabase/schema.sql](supabase/schema.sql) içeriğini yapıştır → Run (bir kez).
+3. **Authentication → Providers → Email**: açık olduğundan emin ol (magic link varsayılan).
+4. **Authentication → URL Configuration**: Site URL = `https://cards-calendar.vercel.app`.
+5. **Project Settings → API**: `Project URL` ve `anon public` anahtarını kopyala.
+6. Vercel → Project Settings → **Environment Variables**:
+   - `VITE_SUPABASE_URL` = Project URL
+   - `VITE_SUPABASE_ANON_KEY` = anon anahtar
+   → kaydet, **Redeploy**. Yerel için: `app/.env.example` → `app/.env`.
+
+Env'ler tanımlanınca Ayarlar sayfasında **Hesap** paneli belirir: e-postayla
+şifresiz giriş (magic link), kartlar buluta yedeklenir ve cihazlar arası
+eşitlenir. Senkron kuralı: girişte bulut doluysa bulut kazanır; boşsa yerel
+kartlar yüklenir; sonraki tüm değişiklikler anında buluta yazılır.
+Faturalama (Stripe/premium) Faz 2'de eklenecek.
+
 ## Vercel kurulum notları
 
 1. Vercel → **Add New → Project** → `hamzaciftci/CardsCalendar-` deposunu içe aktar.
@@ -56,6 +77,7 @@ npm run build      # production build → dist/client + dist/server (SSR)
 - [x] GitHub'a push'landı → [hamzaciftci/CardsCalendar](https://github.com/hamzaciftci/CardsCalendar)
 - [x] Vercel'de canlı → **<https://cards-calendar.vercel.app>** (Root Directory: `app`, nitro `vercel` preset)
 - [ ] CI'da `test + typecheck + build` koş (GitHub Actions)
+- [x] Faz 1.5 (SaaS altyapısı): Supabase auth + bulut senkron kodu hazır —
+      kullanıcının Supabase projesi açıp env eklemesi bekleniyor (yukarıdaki bölüm)
 - [ ] PWA manifesti + ikonlar (telefona eklenebilirlik)
-- [ ] Faz 1.5: Supabase projesi (EU/Frankfurt) + magic link auth + senkron
-- [ ] Faz 2: push bildirimleri, ekstre/borç takibi, Expo değerlendirmesi
+- [ ] Faz 2: Stripe/premium, push bildirimleri, ekstre/borç takibi

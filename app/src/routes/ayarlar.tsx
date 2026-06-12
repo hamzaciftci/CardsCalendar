@@ -1,8 +1,11 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { useCards } from "@/hooks/use-cards";
+import { useAuth } from "@/hooks/use-auth";
+import { deleteAllCloudCards } from "@/lib/cloud";
 import { PageHeader } from "@/components/PageHeader";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
 import { clearAll } from "@/lib/storage";
 import {
   AlertDialog,
@@ -14,7 +17,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Download, ShieldCheck, Trash2 } from "lucide-react";
+import { CloudUpload, Download, LogOut, ShieldCheck, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/ayarlar")({
   head: () => ({
@@ -22,17 +25,99 @@ export const Route = createFileRoute("/ayarlar")({
       { title: "Ayarlar — KartPilot" },
       {
         name: "description",
-        content: "Verilerini indir veya sil. Veri sözümüz ve sorumluluk reddini oku.",
+        content: "Hesabını yönet, verilerini indir veya sil. Veri sözümüz ve sorumluluk reddi.",
       },
       { property: "og:title", content: "Ayarlar — KartPilot" },
-      { property: "og:description", content: "Veri sözümüz, indirme ve silme." },
+      { property: "og:description", content: "Hesap, veri sözümüz, indirme ve silme." },
     ],
   }),
   component: SettingsPage,
 });
 
+/** Hesap + bulut senkron paneli (Supabase yapılandırılmışsa görünür) */
+function AccountPanel() {
+  const { session, signInWithEmail, signOut, enabled } = useAuth();
+  const [mounted, setMounted] = useState(false);
+  const [email, setEmail] = useState("");
+  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+
+  useEffect(() => setMounted(true), []);
+  if (!mounted || !enabled) return null;
+
+  const send = async () => {
+    if (!email.includes("@")) return;
+    setState("sending");
+    const { error } = await signInWithEmail(email.trim());
+    setState(error ? "error" : "sent");
+  };
+
+  return (
+    <section className="panel animate-rise p-5 lg:col-span-2">
+      <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">Hesap</p>
+
+      {session ? (
+        <div className="mt-3 flex flex-wrap items-center justify-between gap-3">
+          <div className="flex items-center gap-3">
+            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/10">
+              <CloudUpload className="h-5 w-5 text-success" />
+            </div>
+            <div>
+              <p className="text-sm font-semibold">{session.user.email}</p>
+              <p className="text-[12px] text-muted-foreground">
+                Bulut senkron açık — kartların bu hesaba yedekleniyor.
+              </p>
+            </div>
+          </div>
+          <Button variant="outline" size="sm" onClick={() => void signOut()}>
+            <LogOut className="mr-1.5 h-4 w-4" /> Çıkış yap
+          </Button>
+        </div>
+      ) : state === "sent" ? (
+        <p className="mt-3 text-sm">
+          Giriş bağlantısı gönderildi — <span className="font-semibold">{email}</span> gelen
+          kutusunu kontrol et. Bağlantıya tıkladığında kartların bu hesaba eşitlenmeye başlar.
+        </p>
+      ) : (
+        <div className="mt-3">
+          <p className="text-sm text-muted-foreground">
+            Kartlarını bulutta yedekle, telefon ve bilgisayar arasında eşitle. Şifre yok — e-postana
+            tek kullanımlık giriş bağlantısı göndeririz.
+          </p>
+          <div className="mt-3 flex max-w-md gap-2">
+            <Input
+              type="email"
+              inputMode="email"
+              placeholder="e-posta adresin"
+              value={email}
+              onChange={(e) => setEmail(e.target.value)}
+              onKeyDown={(e) => e.key === "Enter" && void send()}
+              className="h-10"
+            />
+            <Button
+              className="h-10 flex-none font-semibold"
+              disabled={state === "sending" || !email.includes("@")}
+              onClick={() => void send()}
+            >
+              {state === "sending" ? "Gönderiliyor…" : "Bağlantı gönder"}
+            </Button>
+          </div>
+          {state === "error" && (
+            <p className="mt-2 text-[12px] text-destructive">
+              Bağlantı gönderilemedi — adresi kontrol edip tekrar dene.
+            </p>
+          )}
+          <p className="mt-2 text-[11px] text-muted-foreground">
+            Bağlantı isteyerek kart verilerinin hesabında saklanmasını kabul etmiş olursun.
+          </p>
+        </div>
+      )}
+    </section>
+  );
+}
+
 function SettingsPage() {
   const { cards } = useCards();
+  const { session } = useAuth();
   const [step, setStep] = useState<0 | 1 | 2>(0);
 
   const download = () => {
@@ -45,7 +130,8 @@ function SettingsPage() {
     URL.revokeObjectURL(url);
   };
 
-  const deleteAll = () => {
+  const deleteAll = async () => {
+    if (session) await deleteAllCloudCards(session.user.id);
     clearAll();
     location.reload();
   };
@@ -55,7 +141,9 @@ function SettingsPage() {
       <PageHeader title="Ayarlar" />
 
       <div className="grid items-start gap-5 lg:grid-cols-2">
-        <section className="panel animate-rise p-5" style={{ animationDelay: "80ms" }}>
+        <AccountPanel />
+
+        <section className="panel animate-rise p-5" style={{ animationDelay: "60ms" }}>
           <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
             Veriler
           </p>
@@ -72,17 +160,17 @@ function SettingsPage() {
             </Button>
           </div>
           <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
-            Verilerin yalnızca bu cihazda tutulur; dilediğin an indirebilir ya da kalıcı olarak
-            silebilirsin.
+            Hesap açmadıysan verilerin yalnızca bu cihazda tutulur; dilediğin an indirebilir ya da
+            kalıcı olarak silebilirsin.
           </p>
         </section>
 
-        <section className="panel animate-rise p-5" style={{ animationDelay: "140ms" }}>
+        <section className="panel animate-rise p-5" style={{ animationDelay: "120ms" }}>
           <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
             Veri Sözümüz
           </p>
           <div className="mt-3 flex items-start gap-3">
-            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/15 shadow-[0_0_14px_rgb(43_227_164_/_0.15)]">
+            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/10">
               <ShieldCheck className="h-5 w-5 text-success" />
             </div>
             <div className="space-y-2 text-[13px] leading-relaxed">
@@ -104,7 +192,7 @@ function SettingsPage() {
 
         <section
           className="panel animate-rise p-5 lg:col-span-2"
-          style={{ animationDelay: "200ms" }}
+          style={{ animationDelay: "180ms" }}
         >
           <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
             Sorumluluk Reddi
@@ -117,7 +205,7 @@ function SettingsPage() {
       </div>
 
       <p className="tabular mt-8 text-center text-[10px] uppercase tracking-widest text-muted-foreground/70">
-        KartPilot v1.0 · gece uçuşu
+        KartPilot v1.1
       </p>
 
       <AlertDialog open={step === 1} onOpenChange={(o) => !o && setStep(0)}>
@@ -125,7 +213,9 @@ function SettingsPage() {
           <AlertDialogHeader>
             <AlertDialogTitle>Tüm verilerini silmek istediğine emin misin?</AlertDialogTitle>
             <AlertDialogDescription>
-              Kartların, tarihlerin ve ayarların tamamı bu cihazdan silinecek.
+              {session
+                ? "Kartların hem bu cihazdan hem de bulut hesabından silinecek."
+                : "Kartların, tarihlerin ve ayarların tamamı bu cihazdan silinecek."}
             </AlertDialogDescription>
           </AlertDialogHeader>
           <AlertDialogFooter>
@@ -152,7 +242,7 @@ function SettingsPage() {
             <AlertDialogCancel>Vazgeç</AlertDialogCancel>
             <AlertDialogAction
               className="bg-destructive text-destructive-foreground hover:bg-destructive/90"
-              onClick={deleteAll}
+              onClick={() => void deleteAll()}
             >
               Evet, sil
             </AlertDialogAction>

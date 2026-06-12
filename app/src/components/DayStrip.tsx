@@ -32,8 +32,8 @@ export function DayStrip({
               height: `${18 + (c.days / max) * 82}%`,
               backgroundColor:
                 i === 0
-                  ? "#59a8ff"
-                  : `rgb(43 227 164 / ${(0.15 + (c.days / max) * 0.75).toFixed(2)})`,
+                  ? "#16181d"
+                  : `rgb(31 122 77 / ${(0.12 + (c.days / max) * 0.78).toFixed(2)})`,
             }}
           />
         ))}

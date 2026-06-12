@@ -62,17 +62,17 @@ function Gauge({ days }: { days: number }) {
       <svg viewBox="0 0 220 114" className="w-full">
         <defs>
           <linearGradient id="kp-gauge" x1="0" y1="1" x2="1" y2="0">
-            <stop offset="0%" stopColor="#2be3a4" />
-            <stop offset="100%" stopColor="#59a8ff" />
+            <stop offset="0%" stopColor="#1f7a4d" />
+            <stop offset="100%" stopColor="#2fa56b" />
           </linearGradient>
         </defs>
         {ticks.map((t, i) => (
-          <line key={i} {...t} stroke="rgb(148 170 205 / 0.3)" strokeWidth="1.5" />
+          <line key={i} {...t} stroke="rgb(22 24 29 / 0.15)" strokeWidth="1.5" />
         ))}
         <path
           d="M22 108 A 88 88 0 0 1 198 108"
           fill="none"
-          stroke="rgb(148 170 205 / 0.14)"
+          stroke="rgb(22 24 29 / 0.08)"
           strokeWidth="10"
           strokeLinecap="round"
         />
@@ -88,9 +88,7 @@ function Gauge({ days }: { days: number }) {
         />
       </svg>
       <div className="absolute inset-x-0 bottom-0 text-center">
-        <span className="glow-success tabular text-[44px] font-bold leading-none text-success">
-          {days}
-        </span>
+        <span className="tabular text-[44px] font-bold leading-none text-success">{days}</span>
         <span className="ml-1 text-xs font-semibold text-success/80">gün</span>
         <p className="tabular mt-0.5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
           faizsiz
@@ -198,7 +196,7 @@ function TodayPage() {
       <div>
         <PageHeader title="Bugün" subtitle={formatLongDate(new Date())} />
         <div className="panel animate-rise mx-auto max-w-xl p-8 text-center lg:p-12">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[0_0_20px_rgb(89_168_255_/_0.18)]">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/10 text-primary">
             <Sparkles className="h-8 w-8" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">
@@ -255,7 +253,7 @@ function TodayPage() {
               <div
                 className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full"
                 style={{
-                  background: `radial-gradient(closest-side, ${todayBest.card.color}2e, transparent)`,
+                  background: `radial-gradient(closest-side, ${todayBest.card.color}1a, transparent)`,
                 }}
               />
               <div className="flex items-center justify-between gap-3">
@@ -356,7 +354,7 @@ function TodayPage() {
                 type="date"
                 value={spendDateStr}
                 onChange={(e) => setSpendDateStr(e.target.value)}
-                className="tabular h-11 rounded-md border border-input bg-muted/40 px-3 text-sm [color-scheme:dark]"
+                className="tabular h-11 rounded-md border border-input bg-surface px-3 text-sm"
               />
             </div>
 
@@ -385,7 +383,7 @@ function TodayPage() {
                       <p className="text-xs text-muted-foreground">{result.best.card.bankName}</p>
                     </div>
                     <div className="text-right">
-                      <span className="glow-success tabular text-[40px] font-bold leading-none text-success">
+                      <span className="tabular text-[40px] font-bold leading-none text-success">
                         {result.best.result.days}
                       </span>
                       <span className="ml-1 text-xs font-semibold text-success/80">gün</span>

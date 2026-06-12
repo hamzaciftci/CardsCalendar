@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Türkiye'deki kredi kartların için her güne en uzun faizsiz süreyi öneren akıllı asistan.",
       },
       { name: "author", content: "KartPilot" },
-      { name: "theme-color", content: "#070d19" },
+      { name: "theme-color", content: "#f7f7f5" },
       { property: "og:title", content: "KartPilot — Hangi kartla harcayayım?" },
       {
         property: "og:description",
@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Geist:wght@400;500;600;700&family=Geist+Mono:wght@400;500;600&family=Instrument+Serif&display=swap",
       },
       { rel: "stylesheet", href: appCss },
     ],
@@ -125,9 +125,9 @@ const tabs = [
 function SideNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-[#0a1426]/85 backdrop-blur-xl lg:flex">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-background lg:flex">
       <div className="flex items-center gap-3 px-6 pb-10 pt-8">
-        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-primary/15 text-primary shadow-[0_0_16px_rgb(89_168_255_/_0.18)]">
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-foreground text-background">
           <Compass className="h-5 w-5" />
         </div>
         <div>
@@ -149,12 +149,12 @@ function SideNav() {
               className={
                 "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors " +
                 (active
-                  ? "bg-accent text-foreground"
-                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")
+                  ? "border border-border bg-surface text-foreground shadow-[0_1px_2px_rgb(16_24_40_/_0.05)]"
+                  : "text-muted-foreground hover:bg-muted/70 hover:text-foreground")
               }
             >
               {active && (
-                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_8px_rgb(89_168_255_/_0.45)]" />
+                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-foreground" />
               )}
               <Icon
                 className={"h-[18px] w-[18px] " + (active ? "text-primary" : "")}
@@ -184,7 +184,7 @@ function BottomDock() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
     <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] lg:hidden">
-      <ul className="mx-auto grid max-w-md grid-cols-4 rounded-2xl border border-border bg-[#0b1528]/90 shadow-[0_18px_40px_rgb(2_6_16_/_0.6)] backdrop-blur-xl">
+      <ul className="mx-auto grid max-w-md grid-cols-4 rounded-2xl border border-border bg-surface/95 shadow-[0_12px_32px_rgb(16_24_40_/_0.14)] backdrop-blur-xl">
         {tabs.map((t) => {
           const active = pathname === t.to;
           const Icon = t.icon;
@@ -194,15 +194,10 @@ function BottomDock() {
                 to={t.to}
                 className={
                   "flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition-colors " +
-                  (active ? "text-primary" : "text-muted-foreground hover:text-foreground")
+                  (active ? "text-foreground" : "text-muted-foreground hover:text-foreground")
                 }
               >
-                <Icon
-                  className={
-                    "h-5 w-5 " + (active ? "drop-shadow-[0_0_6px_rgb(89_168_255_/_0.4)]" : "")
-                  }
-                  strokeWidth={active ? 2.4 : 2}
-                />
+                <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
                 {t.label}
               </Link>
             </li>

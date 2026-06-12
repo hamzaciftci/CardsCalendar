@@ -36,8 +36,8 @@ export function CardTile({
 
       <div className="flex items-center gap-3">
         <div
-          className="tabular flex h-10 w-10 flex-none items-center justify-center rounded-xl text-base font-bold text-[#04101f]"
-          style={{ backgroundColor: card.color, boxShadow: `0 0 14px ${card.color}40` }}
+          className="tabular flex h-10 w-10 flex-none items-center justify-center rounded-xl text-base font-bold text-white"
+          style={{ backgroundColor: card.color }}
         >
           {initials}
         </div>

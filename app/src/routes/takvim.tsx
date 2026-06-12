@@ -56,6 +56,7 @@ function CalendarPage() {
     return map;
   }, [cards, cursor]);
 
+  // Hook'lar koşullu return'den ÖNCE gelmeli (React kuralı)
   const selectedRec = useMemo(
     () => (cards.length ? recommend(cards, 1, selected) : null),
     [cards, selected],
@@ -79,127 +80,146 @@ function CalendarPage() {
       : undefined;
 
   return (
-    <div className="pb-8">
+    <div>
       <PageHeader title="Takvim" subtitle="Kesim ve son ödeme günlerin" />
 
-      <div className="mx-5 rounded-2xl bg-surface p-4 shadow-soft">
-        <div className="flex items-center justify-between">
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCursor(new Date(year, month - 1, 1))}
-          >
-            <ChevronLeft className="h-5 w-5" />
-          </Button>
-          <p className="text-base font-semibold">
-            {monthName(month)} {year}
-          </p>
-          <Button
-            variant="ghost"
-            size="icon"
-            onClick={() => setCursor(new Date(year, month + 1, 1))}
-          >
-            <ChevronRight className="h-5 w-5" />
-          </Button>
-        </div>
+      <div className="grid items-start gap-5 lg:grid-cols-[minmax(0,1fr)_360px]">
+        {/* ── Takvim paneli ─────────────────────────────────────────── */}
+        <section className="panel animate-rise p-4 lg:p-6" style={{ animationDelay: "80ms" }}>
+          <div className="flex items-center justify-between">
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => setCursor(new Date(year, month - 1, 1))}
+            >
+              <ChevronLeft className="h-5 w-5" />
+            </Button>
+            <p className="tabular text-base font-semibold uppercase tracking-[0.18em]">
+              {monthName(month)} {year}
+            </p>
+            <Button
+              variant="ghost"
+              size="icon"
+              className="text-muted-foreground hover:text-foreground"
+              onClick={() => setCursor(new Date(year, month + 1, 1))}
+            >
+              <ChevronRight className="h-5 w-5" />
+            </Button>
+          </div>
 
-        <div className="mt-3 grid grid-cols-7 gap-1 text-center text-[11px] font-medium text-muted-foreground">
-          {shortWeekdays().map((d) => (
-            <div key={d}>{d}</div>
-          ))}
-        </div>
-        <div className="mt-1 grid grid-cols-7 gap-1">
-          {cells.map((d, i) => {
-            if (d === null) return <div key={i} />;
-            const date = new Date(year, month, d);
-            const isToday = date.getTime() === today.getTime();
-            const isSelected = date.getTime() === selected.getTime();
-            const e = events.get(d);
-            return (
-              <button
-                key={i}
-                onClick={() => setSelected(date)}
-                className={
-                  "relative flex aspect-square flex-col items-center justify-center rounded-lg text-sm tabular transition " +
-                  (isSelected
-                    ? "bg-primary text-primary-foreground font-semibold"
-                    : isToday
-                      ? "bg-primary/10 text-primary font-semibold"
-                      : "hover:bg-muted")
-                }
-              >
-                <span>{d}</span>
-                {e && e.statement.length + e.due.length > 0 && (
-                  <span className="absolute bottom-1 flex gap-0.5">
-                    {e.statement.slice(0, 3).map((c, idx) => (
-                      <span
-                        key={"s" + idx}
-                        className="block h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-l-transparent border-r-transparent"
-                        style={{ borderBottomColor: c.color }}
-                      />
-                    ))}
-                    {e.due.slice(0, 3).map((c, idx) => (
-                      <span
-                        key={"d" + idx}
-                        className="block h-1.5 w-1.5 rounded-full"
-                        style={{ backgroundColor: c.color }}
-                      />
-                    ))}
-                  </span>
-                )}
-              </button>
-            );
-          })}
-        </div>
-
-        <div className="mt-3 flex items-center gap-4 text-[11px] text-muted-foreground">
-          <span className="flex items-center gap-1">
-            <span className="block h-0 w-0 border-l-[3px] border-r-[3px] border-b-[4px] border-l-transparent border-r-transparent border-b-foreground" />
-            kesim günü
-          </span>
-          <span className="flex items-center gap-1">
-            <span className="block h-1.5 w-1.5 rounded-full bg-foreground" />
-            son ödeme
-          </span>
-        </div>
-      </div>
-
-      <div className="mx-5 mt-4 rounded-2xl bg-surface p-4 shadow-soft">
-        <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-          {formatLongDate(selected)}
-        </p>
-
-        {selectedEvents && selectedEvents.statement.length + selectedEvents.due.length > 0 ? (
-          <ul className="mt-2 space-y-1.5">
-            {selectedEvents.statement.map((c) => (
-              <li key={"s" + c.id} className="flex items-center gap-2 text-[13px]">
-                <span
-                  className="block h-0 w-0 border-l-[4px] border-r-[4px] border-b-[6px] border-l-transparent border-r-transparent"
-                  style={{ borderBottomColor: c.color }}
-                />
-                <span>{c.name} — kesim günü</span>
-              </li>
+          <div className="tabular mt-4 grid grid-cols-7 gap-1 text-center text-[10px] font-medium uppercase tracking-widest text-muted-foreground">
+            {shortWeekdays().map((d) => (
+              <div key={d}>{d}</div>
             ))}
-            {selectedEvents.due.map((c) => (
-              <li key={"d" + c.id} className="flex items-center gap-2 text-[13px]">
-                <span className="block h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
-                <span>{c.name} — son ödeme</span>
-              </li>
-            ))}
-          </ul>
-        ) : (
-          <p className="mt-2 text-sm text-muted-foreground">Bu gün için kart olayı yok.</p>
-        )}
+          </div>
+          <div className="mt-1 grid grid-cols-7 gap-1">
+            {cells.map((d, i) => {
+              if (d === null) return <div key={i} />;
+              const date = new Date(year, month, d);
+              const isToday = date.getTime() === today.getTime();
+              const isSelected = date.getTime() === selected.getTime();
+              const e = events.get(d);
+              return (
+                <button
+                  key={i}
+                  onClick={() => setSelected(date)}
+                  className={
+                    "tabular relative flex aspect-square flex-col items-center justify-center rounded-xl text-sm transition " +
+                    (isSelected
+                      ? "bg-primary font-semibold text-primary-foreground shadow-[0_0_20px_rgb(89_168_255_/_0.45)]"
+                      : isToday
+                        ? "font-semibold text-primary ring-1 ring-inset ring-primary/60"
+                        : "hover:bg-muted/70")
+                  }
+                >
+                  <span>{d}</span>
+                  {e && e.statement.length + e.due.length > 0 && (
+                    <span className="absolute bottom-1.5 flex gap-0.5">
+                      {e.statement.slice(0, 3).map((c, idx) => (
+                        <span
+                          key={"s" + idx}
+                          className="block h-0 w-0 border-b-[5px] border-l-[3.5px] border-r-[3.5px] border-l-transparent border-r-transparent"
+                          style={{ borderBottomColor: isSelected ? "#04101f" : c.color }}
+                        />
+                      ))}
+                      {e.due.slice(0, 3).map((c, idx) => (
+                        <span
+                          key={"d" + idx}
+                          className="block h-1.5 w-1.5 rounded-full"
+                          style={{ backgroundColor: isSelected ? "#04101f" : c.color }}
+                        />
+                      ))}
+                    </span>
+                  )}
+                </button>
+              );
+            })}
+          </div>
 
-        {selectedRec?.best && (
-          <p className="mt-3 rounded-xl bg-success/10 px-3 py-2 text-[13px]">
-            Bu gün harcamak için en iyi kart:{" "}
-            <span className="font-semibold">{selectedRec.best.card.name}</span>{" "}
-            <span className="font-semibold text-success tabular">
-              ({selectedRec.best.result.days} gün)
+          <div className="tabular mt-4 flex items-center gap-5 border-t border-border pt-3 text-[10px] uppercase tracking-wider text-muted-foreground">
+            <span className="flex items-center gap-1.5">
+              <span className="block h-0 w-0 border-b-[5px] border-l-[3.5px] border-r-[3.5px] border-b-warning border-l-transparent border-r-transparent" />
+              kesim günü
             </span>
+            <span className="flex items-center gap-1.5">
+              <span className="block h-1.5 w-1.5 rounded-full bg-destructive" />
+              son ödeme
+            </span>
+          </div>
+        </section>
+
+        {/* ── Seçili gün paneli ─────────────────────────────────────── */}
+        <section
+          className="panel animate-rise p-5 lg:sticky lg:top-8"
+          style={{ animationDelay: "140ms" }}
+        >
+          <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            {formatLongDate(selected)}
           </p>
-        )}
+
+          {selectedEvents && selectedEvents.statement.length + selectedEvents.due.length > 0 ? (
+            <ul className="mt-3 space-y-2">
+              {selectedEvents.statement.map((c) => (
+                <li key={"s" + c.id} className="flex items-center gap-2.5 text-[13px]">
+                  <span
+                    className="block h-0 w-0 border-b-[6px] border-l-[4px] border-r-[4px] border-l-transparent border-r-transparent"
+                    style={{ borderBottomColor: c.color }}
+                  />
+                  <span className="min-w-0 flex-1 truncate">{c.name}</span>
+                  <span className="tabular rounded-md bg-warning/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-warning-foreground">
+                    kesim
+                  </span>
+                </li>
+              ))}
+              {selectedEvents.due.map((c) => (
+                <li key={"d" + c.id} className="flex items-center gap-2.5 text-[13px]">
+                  <span className="h-2 w-2 rounded-full" style={{ backgroundColor: c.color }} />
+                  <span className="min-w-0 flex-1 truncate">{c.name}</span>
+                  <span className="tabular rounded-md bg-destructive/15 px-2 py-0.5 text-[10px] uppercase tracking-wider text-destructive">
+                    son ödeme
+                  </span>
+                </li>
+              ))}
+            </ul>
+          ) : (
+            <p className="mt-3 text-sm text-muted-foreground">Bu gün için kart olayı yok.</p>
+          )}
+
+          {selectedRec?.best && (
+            <div className="mt-4 rounded-xl border border-success/25 bg-success/10 px-4 py-3">
+              <p className="tabular text-[10px] uppercase tracking-[0.2em] text-success-foreground/80">
+                Bu gün için en iyi kart
+              </p>
+              <p className="mt-1.5 flex items-baseline justify-between gap-3">
+                <span className="font-semibold">{selectedRec.best.card.name}</span>
+                <span className="tabular font-bold text-success">
+                  {selectedRec.best.result.days} gün
+                </span>
+              </p>
+            </div>
+          )}
+        </section>
       </div>
     </div>
   );

@@ -51,34 +51,38 @@ function SettingsPage() {
   };
 
   return (
-    <div className="pb-8">
+    <div>
       <PageHeader title="Ayarlar" />
 
-      <section className="mx-5 space-y-2">
-        <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-          Veriler
-        </p>
-        <div className="rounded-2xl bg-surface p-4 shadow-soft space-y-2">
-          <Button variant="outline" className="w-full justify-start" onClick={download}>
-            <Download className="mr-2 h-4 w-4" /> Verilerimi indir (JSON)
-          </Button>
-          <Button
-            variant="ghost"
-            className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
-            onClick={() => setStep(1)}
-          >
-            <Trash2 className="mr-2 h-4 w-4" /> Tüm verilerimi sil
-          </Button>
-        </div>
-      </section>
+      <div className="grid items-start gap-5 lg:grid-cols-2">
+        <section className="panel animate-rise p-5" style={{ animationDelay: "80ms" }}>
+          <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Veriler
+          </p>
+          <div className="mt-3 space-y-2">
+            <Button variant="outline" className="w-full justify-start" onClick={download}>
+              <Download className="mr-2 h-4 w-4" /> Verilerimi indir (JSON)
+            </Button>
+            <Button
+              variant="ghost"
+              className="w-full justify-start text-destructive hover:bg-destructive/10 hover:text-destructive"
+              onClick={() => setStep(1)}
+            >
+              <Trash2 className="mr-2 h-4 w-4" /> Tüm verilerimi sil
+            </Button>
+          </div>
+          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+            Verilerin yalnızca bu cihazda tutulur; dilediğin an indirebilir ya da kalıcı olarak
+            silebilirsin.
+          </p>
+        </section>
 
-      <section className="mx-5 mt-6">
-        <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-          Veri Sözümüz
-        </p>
-        <div className="mt-2 rounded-2xl bg-surface p-4 shadow-soft">
-          <div className="flex items-start gap-3">
-            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-full bg-success/15">
+        <section className="panel animate-rise p-5" style={{ animationDelay: "140ms" }}>
+          <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Veri Sözümüz
+          </p>
+          <div className="mt-3 flex items-start gap-3">
+            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/15 shadow-[0_0_22px_rgb(43_227_164_/_0.2)]">
               <ShieldCheck className="h-5 w-5 text-success" />
             </div>
             <div className="space-y-2 text-[13px] leading-relaxed">
@@ -96,20 +100,25 @@ function SettingsPage() {
               </p>
             </div>
           </div>
-        </div>
-      </section>
+        </section>
 
-      <section className="mx-5 mt-6">
-        <p className="px-1 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-          Sorumluluk Reddi
-        </p>
-        <div className="mt-2 rounded-2xl bg-surface p-4 text-[12px] leading-relaxed text-muted-foreground shadow-soft">
-          KartPilot bir bankacılık veya finansal danışmanlık hizmeti değildir. Hesaplamalar
-          girdiğiniz tarihlere dayanan tahminlerdir; bankanızın ekstresi esastır.
-        </div>
-      </section>
+        <section
+          className="panel animate-rise p-5 lg:col-span-2"
+          style={{ animationDelay: "200ms" }}
+        >
+          <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+            Sorumluluk Reddi
+          </p>
+          <p className="mt-3 text-[12px] leading-relaxed text-muted-foreground">
+            KartPilot bir bankacılık veya finansal danışmanlık hizmeti değildir. Hesaplamalar
+            girdiğiniz tarihlere dayanan tahminlerdir; bankanızın ekstresi esastır.
+          </p>
+        </section>
+      </div>
 
-      <p className="mt-6 text-center text-[11px] text-muted-foreground">KartPilot v1.0</p>
+      <p className="tabular mt-8 text-center text-[10px] uppercase tracking-widest text-muted-foreground/70">
+        KartPilot v1.0 · gece uçuşu
+      </p>
 
       <AlertDialog open={step === 1} onOpenChange={(o) => !o && setStep(0)}>
         <AlertDialogContent>

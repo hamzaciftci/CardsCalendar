@@ -27,6 +27,10 @@ export function formatMonthYear(d: Date): string {
   return `${TR_MONTHS[d.getMonth()]} ${d.getFullYear()}`;
 }
 
+export function formatShortDate(d: Date): string {
+  return `${d.getDate()} ${TR_MONTHS[d.getMonth()].slice(0, 3)}`;
+}
+
 export function monthName(idx: number): string {
   return TR_MONTHS[idx];
 }

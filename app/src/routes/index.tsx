@@ -1,21 +1,29 @@
-import { createFileRoute } from "@tanstack/react-router";
+import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
-import { Link } from "@tanstack/react-router";
 import { useCards } from "@/hooks/use-cards";
 import { Onboarding } from "@/components/Onboarding";
 import { PageHeader } from "@/components/PageHeader";
+import { DayStrip } from "@/components/DayStrip";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
-import { recommend, normalize, diffInDays, nextDueDate } from "@/engine";
+import {
+  recommend,
+  normalize,
+  nextDueDate,
+  statementCutoffFor,
+  diffInDays,
+  type Card,
+} from "@/engine";
 import {
   formatLongDate,
   formatMonthYear,
+  formatShortDate,
   formatTRY,
   toDateInputValue,
   fromDateInputValue,
 } from "@/lib/format";
 import { isOnboarded } from "@/lib/storage";
-import { AlertTriangle, Plus, Sparkles } from "lucide-react";
+import { AlertTriangle, CalendarClock, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/")({
   head: () => ({
@@ -34,6 +42,118 @@ export const Route = createFileRoute("/")({
   }),
   component: TodayPage,
 });
+
+/** Yarım daire "faizsiz gün" göstergesi — kokpit altimetresi */
+function Gauge({ days }: { days: number }) {
+  const max = 45;
+  const ratio = Math.min(Math.max(days, 0), max) / max;
+  const ticks = Array.from({ length: 10 }, (_, i) => {
+    const a = Math.PI - (Math.PI * i) / 9;
+    return {
+      x1: 110 + Math.cos(a) * 70,
+      y1: 108 - Math.sin(a) * 70,
+      x2: 110 + Math.cos(a) * 79,
+      y2: 108 - Math.sin(a) * 79,
+    };
+  });
+
+  return (
+    <div className="relative mx-auto w-[230px] max-w-full flex-none">
+      <svg viewBox="0 0 220 114" className="w-full">
+        <defs>
+          <linearGradient id="kp-gauge" x1="0" y1="1" x2="1" y2="0">
+            <stop offset="0%" stopColor="#2be3a4" />
+            <stop offset="100%" stopColor="#59a8ff" />
+          </linearGradient>
+        </defs>
+        {ticks.map((t, i) => (
+          <line key={i} {...t} stroke="rgb(148 170 205 / 0.3)" strokeWidth="1.5" />
+        ))}
+        <path
+          d="M22 108 A 88 88 0 0 1 198 108"
+          fill="none"
+          stroke="rgb(148 170 205 / 0.14)"
+          strokeWidth="10"
+          strokeLinecap="round"
+        />
+        <path
+          d="M22 108 A 88 88 0 0 1 198 108"
+          pathLength={100}
+          fill="none"
+          stroke="url(#kp-gauge)"
+          strokeWidth="10"
+          strokeLinecap="round"
+          strokeDasharray={`${Math.max(ratio * 100, 1.5)} 100`}
+          className="gauge-arc"
+        />
+      </svg>
+      <div className="absolute inset-x-0 bottom-0 text-center">
+        <span className="glow-success tabular text-[44px] font-bold leading-none text-success">
+          {days}
+        </span>
+        <span className="ml-1 text-xs font-semibold text-success/80">gün</span>
+        <p className="tabular mt-0.5 text-[10px] uppercase tracking-[0.25em] text-muted-foreground">
+          faizsiz
+        </p>
+      </div>
+    </div>
+  );
+}
+
+/** Uçuş planı: tüm kartların yaklaşan kesim/son ödeme tarihleri */
+function UpcomingEvents({ cards }: { cards: Card[] }) {
+  const events = useMemo(() => {
+    const today = normalize(new Date());
+    const list: { card: Card; type: "kesim" | "son ödeme"; date: Date }[] = [];
+    for (const c of cards.filter((c) => c.isActive)) {
+      list.push({ card: c, type: "son ödeme", date: nextDueDate(c, today) });
+      list.push({ card: c, type: "kesim", date: statementCutoffFor(today, c.statementDay) });
+    }
+    return list.sort((a, b) => a.date.getTime() - b.date.getTime()).slice(0, 5);
+  }, [cards]);
+
+  if (events.length === 0) return null;
+  const today = normalize(new Date());
+
+  return (
+    <section className="panel animate-rise p-5" style={{ animationDelay: "160ms" }}>
+      <div className="flex items-center gap-2">
+        <CalendarClock className="h-4 w-4 text-muted-foreground" />
+        <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+          Uçuş planı — yaklaşan tarihler
+        </p>
+      </div>
+      <ul className="mt-2 divide-y divide-border">
+        {events.map((e, i) => {
+          const d = diffInDays(e.date, today);
+          return (
+            <li key={i} className="flex items-center gap-3 py-2.5">
+              <span
+                className="h-2.5 w-2.5 flex-none rounded-full"
+                style={{ backgroundColor: e.card.color }}
+              />
+              <p className="min-w-0 flex-1 truncate text-sm">{e.card.name}</p>
+              <span
+                className={
+                  "tabular rounded-md px-2 py-0.5 text-[10px] uppercase tracking-wider " +
+                  (e.type === "kesim"
+                    ? "bg-warning/15 text-warning-foreground"
+                    : "bg-destructive/15 text-destructive")
+                }
+              >
+                {e.type}
+              </span>
+              <span className="tabular w-14 text-right text-[13px]">{formatShortDate(e.date)}</span>
+              <span className="tabular w-14 text-right text-[12px] text-muted-foreground">
+                {d === 0 ? "BUGÜN" : `D-${d}`}
+              </span>
+            </li>
+          );
+        })}
+      </ul>
+    </section>
+  );
+}
 
 function TodayPage() {
   const { cards, ready } = useCards();
@@ -76,18 +196,18 @@ function TodayPage() {
   if (cards.length === 0) {
     return (
       <div>
-        <PageHeader title="Bugün" />
-        <div className="mx-5 mt-8 rounded-2xl bg-surface p-6 text-center shadow-soft">
-          <div className="mx-auto mb-4 flex h-14 w-14 items-center justify-center rounded-full bg-primary/10">
-            <Sparkles className="h-7 w-7 text-primary" />
+        <PageHeader title="Bugün" subtitle={formatLongDate(new Date())} />
+        <div className="panel animate-rise mx-auto max-w-xl p-8 text-center lg:p-12">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[0_0_30px_rgb(89_168_255_/_0.25)]">
+            <Sparkles className="h-8 w-8" />
           </div>
-          <h2 className="text-lg font-semibold">
+          <h2 className="text-xl font-bold tracking-tight">
             Kartlarını ekle, hangi gün hangi kartla harcayacağını söyleyelim.
           </h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Sadece kart adı, banka ve tarihler. Numara, CVV, şifre yok.
           </p>
-          <Button asChild className="mt-5 h-11 w-full text-base font-semibold">
+          <Button asChild className="mt-6 h-11 px-8 text-base font-semibold">
             <Link to="/kartlarim">İlk kartını ekle</Link>
           </Button>
         </div>
@@ -96,25 +216,25 @@ function TodayPage() {
   }
 
   return (
-    <div className="pb-8">
+    <div>
       <PageHeader title="Bugün" subtitle={formatLongDate(new Date())} />
 
       {upcomingDues.length > 0 && (
-        <div className="mx-5 mb-4 space-y-2">
+        <div className="animate-rise mb-5 space-y-2">
           {upcomingDues.map(({ card, days }) => (
             <div
               key={card.id}
-              className="flex items-center gap-2 rounded-xl bg-warning/15 px-3 py-2.5 text-[13px] text-warning-foreground"
+              className="flex items-center gap-3 rounded-2xl border border-warning/25 bg-warning/10 px-4 py-3 text-[13px] text-warning-foreground"
             >
               <AlertTriangle className="h-4 w-4 flex-none text-warning" />
               <p>
                 {days === 0 ? (
                   <>
-                    Bugün son ödeme günü: <span className="font-semibold">{card.name}</span>
+                    Bugün <span className="font-semibold">son ödeme günü</span>: {card.name}
                   </>
                 ) : (
                   <>
-                    Son ödemeye <span className="font-semibold tabular">{days} gün</span>:{" "}
+                    Son ödemeye <span className="tabular font-semibold">{days} gün</span>:{" "}
                     {card.name}
                   </>
                 )}
@@ -124,195 +244,242 @@ function TodayPage() {
         </div>
       )}
 
-      {todayBest && (
-        <section
-          className="mx-5 overflow-hidden rounded-3xl bg-surface p-5 shadow-soft"
-          style={{ borderTop: `4px solid ${todayBest.card.color}` }}
-        >
-          <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-            Bugünün kartı
-          </p>
-          <p className="mt-1 text-xl font-bold">{todayBest.card.name}</p>
-          <p className="text-xs text-muted-foreground">{todayBest.card.bankName}</p>
-          <div className="mt-3 flex items-baseline gap-2">
-            <span className="text-[48px] font-extrabold leading-none text-success tabular">
-              {todayBest.result.days}
-            </span>
-            <span className="text-sm font-medium text-success">gün faizsiz</span>
-          </div>
-          <p className="mt-2 text-[12px] text-muted-foreground tabular">
-            Kesim: {formatLongDate(todayBest.result.cutoffDate)} · Son ödeme:{" "}
-            {formatLongDate(todayBest.result.dueDate)}
-          </p>
-        </section>
-      )}
-
-      <section className="mx-5 mt-5 rounded-2xl bg-surface p-5 shadow-soft">
-        <p className="text-[15px] font-semibold">Ne kadar harcayacaksın?</p>
-        <div className="mt-3 flex flex-wrap gap-2">
-          {[1000, 5000, 10000].map((v) => (
-            <button
-              key={v}
-              type="button"
-              onClick={() => {
-                setAmountStr(String(v));
-                setCalculated(false);
-              }}
-              className={
-                "rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
-                (amountStr === String(v)
-                  ? "border-primary bg-primary/10 text-primary"
-                  : "border-border bg-background text-foreground")
-              }
+      <div className="grid items-start gap-5 lg:grid-cols-12">
+        {/* ── Gösterge paneli (mobilde 1. sıra) ─────────────────────── */}
+        <div className="lg:col-span-7">
+          {todayBest && (
+            <section
+              className="panel animate-rise relative overflow-hidden p-5 lg:p-7"
+              style={{ animationDelay: "80ms" }}
             >
-              {formatTRY(v)}
-            </button>
-          ))}
-          <button
-            type="button"
-            onClick={() => {
-              setAmountStr("");
-              setCalculated(false);
-            }}
-            className="rounded-full border border-border bg-background px-3.5 py-1.5 text-sm font-medium"
-          >
-            Diğer
-          </button>
-        </div>
-
-        <div className="mt-3 flex gap-2">
-          <Input
-            inputMode="numeric"
-            placeholder="Tutar (₺)"
-            value={amountStr}
-            onChange={(e) => {
-              setAmountStr(e.target.value.replace(/\D/g, ""));
-              setCalculated(false);
-            }}
-            className="h-11 text-base tabular"
-          />
-          <input
-            type="date"
-            value={spendDateStr}
-            onChange={(e) => setSpendDateStr(e.target.value)}
-            className="h-11 rounded-md border border-input bg-background px-3 text-sm tabular"
-          />
-        </div>
-
-        <Button
-          className="mt-3 h-11 w-full text-base font-semibold"
-          disabled={!amount}
-          onClick={() => setCalculated(true)}
-        >
-          Hesapla
-        </Button>
-      </section>
-
-      {result && (
-        <section className="mx-5 mt-5 space-y-4">
-          {result.best ? (
-            <div
-              className="rounded-2xl bg-surface p-5 shadow-soft"
-              style={{ borderLeft: `4px solid ${result.best.card.color}` }}
-            >
-              <p className="text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                Önerilen kart
-              </p>
-              <p className="mt-1 text-lg font-bold">{result.best.card.name}</p>
-              <div className="mt-2 flex items-baseline gap-2">
-                <span className="text-[40px] font-extrabold leading-none text-success tabular">
-                  {result.best.result.days}
-                </span>
-                <span className="text-sm font-medium text-success">gün faizsiz</span>
-              </div>
-              <p className="mt-2 text-[12px] text-muted-foreground tabular">
-                Kesim: {formatLongDate(result.best.result.cutoffDate)} · Son ödeme:{" "}
-                {formatLongDate(result.best.result.dueDate)}
-              </p>
-              <p className="mt-1 text-[12px] text-muted-foreground">
-                {formatMonthYear(result.best.result.cutoffDate)} ekstresine yansır.
-              </p>
-              {result.best.warnings.map((w, i) => (
-                <p
-                  key={i}
-                  className="mt-2 rounded-lg bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground"
-                >
-                  {w}
+              <div
+                className="pointer-events-none absolute -right-20 -top-24 h-64 w-64 rounded-full"
+                style={{
+                  background: `radial-gradient(closest-side, ${todayBest.card.color}2e, transparent)`,
+                }}
+              />
+              <div className="flex items-center justify-between gap-3">
+                <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                  Bugünün kartı
                 </p>
-              ))}
-            </div>
-          ) : (
-            <div className="rounded-2xl bg-surface p-5 text-sm text-muted-foreground shadow-soft">
-              Bu tutar için uygun kart bulunamadı.
-            </div>
-          )}
+                <span className="tabular rounded-full border border-border bg-muted/60 px-2.5 py-1 text-[10px] uppercase tracking-widest text-muted-foreground">
+                  {todayBest.card.bankName}
+                </span>
+              </div>
 
-          {result.alternatives.length > 0 && (
-            <div className="rounded-2xl bg-surface p-4 shadow-soft">
-              <p className="mb-2 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                Alternatifler
-              </p>
-              <ul className="divide-y divide-border">
-                {result.alternatives.map((a) => (
-                  <li key={a.card.id} className="flex items-center justify-between py-2.5">
-                    <div className="flex items-center gap-2 min-w-0">
-                      <span
-                        className="h-2.5 w-2.5 flex-none rounded-full"
-                        style={{ backgroundColor: a.card.color }}
-                      />
-                      <p className="truncate text-sm">{a.card.name}</p>
+              <div className="mt-4 grid gap-6 sm:grid-cols-[minmax(0,1fr)_auto] sm:items-center">
+                <div>
+                  <h2 className="text-2xl font-bold tracking-tight lg:text-[28px]">
+                    {todayBest.card.name}
+                  </h2>
+                  <dl className="tabular mt-4 space-y-2 text-[13px]">
+                    <div className="flex items-baseline gap-3">
+                      <dt className="w-24 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Kesim
+                      </dt>
+                      <dd>{formatLongDate(todayBest.result.cutoffDate)}</dd>
                     </div>
-                    <p className="text-sm font-semibold text-success tabular">
-                      {a.result.days} gün
+                    <div className="flex items-baseline gap-3">
+                      <dt className="w-24 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Son ödeme
+                      </dt>
+                      <dd>{formatLongDate(todayBest.result.dueDate)}</dd>
+                    </div>
+                    <div className="flex items-baseline gap-3">
+                      <dt className="w-24 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                        Ekstre
+                      </dt>
+                      <dd>{formatMonthYear(todayBest.result.cutoffDate)}</dd>
+                    </div>
+                  </dl>
+                </div>
+                <Gauge days={todayBest.result.days} />
+              </div>
+
+              <div className="mt-6 border-t border-border pt-4">
+                <p className="tabular mb-2 text-[10px] uppercase tracking-[0.2em] text-muted-foreground">
+                  30 günlük pencere — bugün harcamak yerine beklersen
+                </p>
+                <DayStrip card={todayBest.card} />
+              </div>
+            </section>
+          )}
+        </div>
+
+        {/* ── Sağ kolon: simülasyon kokpiti ─────────────────────────── */}
+        <div className="space-y-4 lg:sticky lg:top-8 lg:col-span-5 lg:row-span-2">
+          <section className="panel animate-rise p-5 lg:p-6" style={{ animationDelay: "120ms" }}>
+            <p className="text-[16px] font-bold tracking-tight">Ne kadar harcayacaksın?</p>
+            <div className="mt-3 flex flex-wrap gap-2">
+              {[1000, 5000, 10000].map((v) => (
+                <button
+                  key={v}
+                  type="button"
+                  onClick={() => {
+                    setAmountStr(String(v));
+                    setCalculated(false);
+                  }}
+                  className={
+                    "tabular rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
+                    (amountStr === String(v)
+                      ? "border-primary bg-primary/15 text-primary"
+                      : "border-border bg-muted/40 text-foreground hover:border-muted-foreground/40")
+                  }
+                >
+                  {formatTRY(v)}
+                </button>
+              ))}
+              <button
+                type="button"
+                onClick={() => {
+                  setAmountStr("");
+                  setCalculated(false);
+                }}
+                className="rounded-full border border-border bg-muted/40 px-3.5 py-1.5 text-sm font-medium hover:border-muted-foreground/40"
+              >
+                Diğer
+              </button>
+            </div>
+
+            <div className="mt-3 flex gap-2">
+              <Input
+                inputMode="numeric"
+                placeholder="Tutar (₺)"
+                value={amountStr}
+                onChange={(e) => {
+                  setAmountStr(e.target.value.replace(/\D/g, ""));
+                  setCalculated(false);
+                }}
+                className="tabular h-11 text-base"
+              />
+              <input
+                type="date"
+                value={spendDateStr}
+                onChange={(e) => setSpendDateStr(e.target.value)}
+                className="tabular h-11 rounded-md border border-input bg-muted/40 px-3 text-sm [color-scheme:dark]"
+              />
+            </div>
+
+            <Button
+              className="mt-3 h-11 w-full text-base font-semibold"
+              disabled={!amount}
+              onClick={() => setCalculated(true)}
+            >
+              Hesapla
+            </Button>
+          </section>
+
+          {result && (
+            <div className="space-y-4">
+              {result.best ? (
+                <section
+                  className="panel animate-rise relative overflow-hidden p-5"
+                  style={{ borderColor: `${result.best.card.color}55` }}
+                >
+                  <p className="tabular text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                    Önerilen kart
+                  </p>
+                  <div className="mt-2 flex items-start justify-between gap-4">
+                    <div>
+                      <p className="text-lg font-bold tracking-tight">{result.best.card.name}</p>
+                      <p className="text-xs text-muted-foreground">{result.best.card.bankName}</p>
+                    </div>
+                    <div className="text-right">
+                      <span className="glow-success tabular text-[40px] font-bold leading-none text-success">
+                        {result.best.result.days}
+                      </span>
+                      <span className="ml-1 text-xs font-semibold text-success/80">gün</span>
+                    </div>
+                  </div>
+                  <dl className="tabular mt-3 space-y-1 text-[12px] text-muted-foreground">
+                    <dd>
+                      Kesim {formatLongDate(result.best.result.cutoffDate)} · Son ödeme{" "}
+                      {formatLongDate(result.best.result.dueDate)}
+                    </dd>
+                    <dd>{formatMonthYear(result.best.result.cutoffDate)} ekstresine yansır.</dd>
+                  </dl>
+                  {result.best.warnings.map((w, i) => (
+                    <p
+                      key={i}
+                      className="mt-2 rounded-lg bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground"
+                    >
+                      {w}
                     </p>
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
+                  ))}
+                </section>
+              ) : (
+                <section className="panel animate-rise p-5 text-sm text-muted-foreground">
+                  Bu tutar için uygun kart bulunamadı.
+                </section>
+              )}
 
-          {result.waitTip && (
-            <div className="rounded-2xl bg-primary/10 p-4 text-[13px] text-foreground">
-              <p>
-                <span className="font-semibold text-primary">İpucu:</span>{" "}
-                {diffInDays(result.waitTip.date, spendDate)} gün beklersen{" "}
-                <span className="font-semibold">{result.waitTip.card.name}</span> ile{" "}
-                <span className="font-semibold text-success tabular">
-                  {result.waitTip.days} gün
-                </span>{" "}
-                faizsiz kullanabilirsin.
+              {result.waitTip && (
+                <div className="animate-rise flex items-start gap-3 rounded-2xl border border-primary/30 bg-primary/10 p-4 text-[13px]">
+                  <Lightbulb className="mt-0.5 h-4 w-4 flex-none text-primary" />
+                  <p>
+                    <span className="tabular font-semibold">
+                      {diffInDays(result.waitTip.date, spendDate)} gün
+                    </span>{" "}
+                    beklersen <span className="font-semibold">{result.waitTip.card.name}</span> ile{" "}
+                    <span className="tabular font-semibold text-success">
+                      {result.waitTip.days} gün
+                    </span>{" "}
+                    faizsiz kullanabilirsin.
+                  </p>
+                </div>
+              )}
+
+              {result.alternatives.length > 0 && (
+                <section className="panel animate-rise p-4">
+                  <p className="tabular mb-1 px-1 text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                    Alternatifler
+                  </p>
+                  <ul className="divide-y divide-border">
+                    {result.alternatives.map((a) => (
+                      <li key={a.card.id} className="flex items-center justify-between px-1 py-2.5">
+                        <div className="flex min-w-0 items-center gap-2">
+                          <span
+                            className="h-2.5 w-2.5 flex-none rounded-full"
+                            style={{ backgroundColor: a.card.color }}
+                          />
+                          <p className="truncate text-sm">{a.card.name}</p>
+                        </div>
+                        <p className="tabular text-sm font-semibold text-success">
+                          {a.result.days} gün
+                        </p>
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              {result.excluded.length > 0 && (
+                <section className="panel animate-rise p-4">
+                  <p className="tabular mb-1 px-1 text-[11px] uppercase tracking-[0.28em] text-muted-foreground">
+                    Hariç tutulanlar
+                  </p>
+                  <ul className="space-y-1.5 px-1">
+                    {result.excluded.map((e) => (
+                      <li key={e.card.id} className="text-[13px] text-muted-foreground">
+                        <span className="font-medium text-foreground/70">{e.card.name}</span> —{" "}
+                        {e.reason}
+                      </li>
+                    ))}
+                  </ul>
+                </section>
+              )}
+
+              <p className="px-1 text-[11px] text-muted-foreground">
+                Tahminidir; bankanızın ekstresi esastır.
               </p>
             </div>
           )}
+        </div>
 
-          {result.excluded.length > 0 && (
-            <div className="rounded-2xl bg-surface p-4 shadow-soft">
-              <p className="mb-2 text-[12px] font-medium uppercase tracking-wide text-muted-foreground">
-                Hariç tutulanlar
-              </p>
-              <ul className="space-y-1.5">
-                {result.excluded.map((e) => (
-                  <li key={e.card.id} className="text-[13px] text-muted-foreground">
-                    <span className="font-medium text-foreground/70">{e.card.name}</span> —{" "}
-                    {e.reason}
-                  </li>
-                ))}
-              </ul>
-            </div>
-          )}
-
-          <p className="px-1 text-[11px] text-muted-foreground">
-            Tahminidir; bankanızın ekstresi esastır.
-          </p>
-        </section>
-      )}
-
-      <div className="mx-5 mt-6 flex justify-center">
-        <Button asChild variant="outline" size="sm">
-          <Link to="/kartlarim">
-            <Plus className="mr-1 h-4 w-4" /> Yeni kart ekle
-          </Link>
-        </Button>
+        {/* ── Uçuş planı: yaklaşan tarihler (mobilde 3. sıra) ───────── */}
+        <div className="lg:col-span-7">
+          <UpcomingEvents cards={cards} />
+        </div>
       </div>
     </div>
   );

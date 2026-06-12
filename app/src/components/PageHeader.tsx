@@ -10,10 +10,15 @@ export function PageHeader({
   right?: ReactNode;
 }) {
   return (
-    <header className="flex items-end justify-between px-5 pt-8 pb-4">
+    <header className="animate-rise flex flex-wrap items-end justify-between gap-3 pb-5 pt-7 lg:pb-7 lg:pt-12">
       <div>
-        <h1 className="text-2xl font-bold tracking-tight">{title}</h1>
-        {subtitle && <p className="mt-1 text-sm text-muted-foreground">{subtitle}</p>}
+        <p className="tabular text-[10px] uppercase tracking-[0.32em] text-muted-foreground/80">
+          KartPilot
+        </p>
+        <h1 className="mt-1.5 text-[28px] font-bold leading-none tracking-tight lg:text-4xl">
+          {title}
+        </h1>
+        {subtitle && <p className="tabular mt-2 text-[13px] text-muted-foreground">{subtitle}</p>}
       </div>
       {right}
     </header>

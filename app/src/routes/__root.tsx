@@ -9,7 +9,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { type ReactNode } from "react";
-import { Home, CreditCard, CalendarDays, Settings } from "lucide-react";
+import { Home, CreditCard, CalendarDays, Settings, Compass, ShieldCheck } from "lucide-react";
 
 import appCss from "../styles.css?url";
 
@@ -17,7 +17,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-4">
       <div className="max-w-md text-center">
-        <h1 className="text-7xl font-bold text-foreground">404</h1>
+        <h1 className="tabular text-7xl font-bold text-foreground">404</h1>
         <h2 className="mt-4 text-xl font-semibold text-foreground">Sayfa bulunamadı</h2>
         <p className="mt-2 text-sm text-muted-foreground">Aradığın sayfa burada değil.</p>
         <div className="mt-6">
@@ -75,7 +75,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
           "Türkiye'deki kredi kartların için her güne en uzun faizsiz süreyi öneren akıllı asistan.",
       },
       { name: "author", content: "KartPilot" },
-      { name: "theme-color", content: "#1E5AF5" },
+      { name: "theme-color", content: "#070d19" },
       { property: "og:title", content: "KartPilot — Hangi kartla harcayayım?" },
       {
         property: "og:description",
@@ -89,7 +89,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Bricolage+Grotesque:opsz,wght@12..96,400;12..96,500;12..96,600;12..96,700;12..96,800&family=JetBrains+Mono:wght@400;500;600;700&display=swap",
       },
       { rel: "stylesheet", href: appCss },
     ],
@@ -121,11 +121,70 @@ const tabs = [
   { to: "/ayarlar", label: "Ayarlar", icon: Settings },
 ] as const;
 
-function BottomNav() {
+/** Masaüstü: sol kokpit menüsü */
+function SideNav() {
   const pathname = useRouterState({ select: (s) => s.location.pathname });
   return (
-    <nav className="fixed bottom-0 left-1/2 z-40 w-full max-w-[480px] -translate-x-1/2 border-t border-border bg-surface/95 backdrop-blur">
-      <ul className="grid grid-cols-4">
+    <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-[#0a1426]/85 backdrop-blur-xl lg:flex">
+      <div className="flex items-center gap-3 px-6 pb-10 pt-8">
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-primary/15 text-primary shadow-[0_0_24px_rgb(89_168_255_/_0.25)]">
+          <Compass className="h-5 w-5" />
+        </div>
+        <div>
+          <p className="text-lg font-bold leading-none tracking-tight">KartPilot</p>
+          <p className="tabular mt-1 text-[10px] uppercase tracking-[0.24em] text-muted-foreground">
+            kart asistanı
+          </p>
+        </div>
+      </div>
+
+      <nav className="flex-1 space-y-1 px-3">
+        {tabs.map((t) => {
+          const active = pathname === t.to;
+          const Icon = t.icon;
+          return (
+            <Link
+              key={t.to}
+              to={t.to}
+              className={
+                "relative flex items-center gap-3 rounded-xl px-3 py-2.5 text-sm font-medium transition-colors " +
+                (active
+                  ? "bg-accent text-foreground"
+                  : "text-muted-foreground hover:bg-muted/60 hover:text-foreground")
+              }
+            >
+              {active && (
+                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_rgb(89_168_255_/_0.8)]" />
+              )}
+              <Icon
+                className={"h-[18px] w-[18px] " + (active ? "text-primary" : "")}
+                strokeWidth={active ? 2.4 : 2}
+              />
+              {t.label}
+            </Link>
+          );
+        })}
+      </nav>
+
+      <div className="space-y-3 px-4 pb-6">
+        <div className="flex items-start gap-2.5 rounded-xl border border-success/20 bg-success/10 p-3 text-[12px] leading-snug text-success-foreground/90">
+          <ShieldCheck className="mt-0.5 h-4 w-4 flex-none text-success" />
+          <p>Kart numarası, CVV, şifre — hiçbirini istemiyoruz.</p>
+        </div>
+        <p className="tabular px-1 text-[10px] uppercase tracking-widest text-muted-foreground/70">
+          KartPilot v1.0
+        </p>
+      </div>
+    </aside>
+  );
+}
+
+/** Mobil: yüzen cam dock */
+function BottomDock() {
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  return (
+    <nav className="fixed inset-x-0 bottom-0 z-40 px-3 pb-[calc(env(safe-area-inset-bottom)+10px)] lg:hidden">
+      <ul className="mx-auto grid max-w-md grid-cols-4 rounded-2xl border border-border bg-[#0b1528]/90 shadow-[0_18px_40px_rgb(2_6_16_/_0.6)] backdrop-blur-xl">
         {tabs.map((t) => {
           const active = pathname === t.to;
           const Icon = t.icon;
@@ -134,18 +193,22 @@ function BottomNav() {
               <Link
                 to={t.to}
                 className={
-                  "flex flex-col items-center gap-1 py-2.5 text-[11px] font-medium transition-colors " +
+                  "flex flex-col items-center gap-1 py-2.5 text-[10px] font-semibold uppercase tracking-wide transition-colors " +
                   (active ? "text-primary" : "text-muted-foreground hover:text-foreground")
                 }
               >
-                <Icon className="h-5 w-5" strokeWidth={active ? 2.4 : 2} />
+                <Icon
+                  className={
+                    "h-5 w-5 " + (active ? "drop-shadow-[0_0_8px_rgb(89_168_255_/_0.7)]" : "")
+                  }
+                  strokeWidth={active ? 2.4 : 2}
+                />
                 {t.label}
               </Link>
             </li>
           );
         })}
       </ul>
-      <div style={{ paddingBottom: "env(safe-area-inset-bottom)" }} />
     </nav>
   );
 }
@@ -155,10 +218,13 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      <div className="mx-auto min-h-screen w-full max-w-[480px] bg-background pb-24">
-        <Outlet />
+      <SideNav />
+      <div className="lg:pl-64">
+        <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 lg:px-10 lg:pb-16">
+          <Outlet />
+        </main>
       </div>
-      <BottomNav />
+      <BottomDock />
     </QueryClientProvider>
   );
 }

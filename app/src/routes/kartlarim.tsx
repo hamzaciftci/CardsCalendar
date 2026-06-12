@@ -2,6 +2,7 @@ import { createFileRoute } from "@tanstack/react-router";
 import { useState } from "react";
 import type { Card } from "@/engine";
 import { useCards } from "@/hooks/use-cards";
+import { useIsMobile } from "@/hooks/use-mobile";
 import { PageHeader } from "@/components/PageHeader";
 import { CardTile } from "@/components/CardTile";
 import { CardForm } from "@/components/CardForm";
@@ -17,7 +18,7 @@ import {
   AlertDialogHeader,
   AlertDialogTitle,
 } from "@/components/ui/alert-dialog";
-import { Plus, Trash2 } from "lucide-react";
+import { Plus, ShieldCheck, Trash2 } from "lucide-react";
 
 export const Route = createFileRoute("/kartlarim")({
   head: () => ({
@@ -27,7 +28,10 @@ export const Route = createFileRoute("/kartlarim")({
         name: "description",
         content: "Kart adı, banka ve tarihlerinle kartlarını yönet — numara/CVV asla istemiyoruz.",
       },
-      { property: "og:title", content: "Kartlarım — KartPilot" },
+      {
+        property: "og:title",
+        content: "Kartlarım — KartPilot",
+      },
       {
         property: "og:description",
         content: "Kartlarını ekle ve düzenle. Numara, CVV, şifre yok.",
@@ -39,6 +43,7 @@ export const Route = createFileRoute("/kartlarim")({
 
 function CardsPage() {
   const { cards, ready, addCard, editCard, removeCard } = useCards();
+  const isMobile = useIsMobile();
   const [sheetOpen, setSheetOpen] = useState(false);
   const [editing, setEditing] = useState<Card | undefined>();
   const [confirmDelete, setConfirmDelete] = useState<Card | undefined>();
@@ -55,25 +60,35 @@ function CardsPage() {
   };
 
   return (
-    <div className="pb-8">
+    <div>
       <PageHeader
         title="Kartlarım"
         subtitle={`${cards.length} kart kayıtlı`}
         right={
-          <Button size="sm" onClick={openNew}>
-            <Plus className="mr-1 h-4 w-4" /> Ekle
+          <Button size="sm" className="h-9 font-semibold" onClick={openNew}>
+            <Plus className="mr-1 h-4 w-4" /> Kart Ekle
           </Button>
         }
       />
 
-      <div className="mx-5 space-y-3">
-        {cards.map((c) => (
-          <CardTile key={c.id} card={c} onClick={() => openEdit(c)} />
+      <div className="animate-rise mb-5 flex items-start gap-2.5 rounded-2xl border border-success/20 bg-success/10 px-4 py-3 text-[12px] leading-snug text-success-foreground/90">
+        <ShieldCheck className="mt-0.5 h-4 w-4 flex-none text-success" />
+        <p>
+          Burada yalnızca kart adı, banka ve tarihler tutulur. Kart numarası, CVV ve şifre — bu
+          uygulamada böyle alanlar yok.
+        </p>
+      </div>
+
+      <div className="grid gap-4 sm:grid-cols-2 xl:grid-cols-3">
+        {cards.map((c, i) => (
+          <div key={c.id} className="animate-rise" style={{ animationDelay: `${80 + i * 60}ms` }}>
+            <CardTile card={c} onClick={() => openEdit(c)} />
+          </div>
         ))}
         {cards.length === 0 && (
-          <div className="rounded-2xl bg-surface p-6 text-center shadow-soft">
+          <div className="panel col-span-full p-8 text-center">
             <p className="text-sm text-muted-foreground">Henüz kart eklemedin.</p>
-            <Button onClick={openNew} className="mt-4">
+            <Button onClick={openNew} className="mt-4 font-semibold">
               İlk kartını ekle
             </Button>
           </div>
@@ -81,9 +96,18 @@ function CardsPage() {
       </div>
 
       <Sheet open={sheetOpen} onOpenChange={setSheetOpen}>
-        <SheetContent side="bottom" className="max-h-[92vh] overflow-y-auto rounded-t-3xl p-0">
+        <SheetContent
+          side={isMobile ? "bottom" : "right"}
+          className={
+            isMobile
+              ? "max-h-[92vh] overflow-y-auto rounded-t-3xl border-border bg-card p-0"
+              : "w-full overflow-y-auto border-border bg-card p-0 sm:max-w-[460px]"
+          }
+        >
           <SheetHeader className="px-5 pb-2 pt-5">
-            <SheetTitle>{editing ? "Kartı düzenle" : "Yeni kart"}</SheetTitle>
+            <SheetTitle className="text-xl font-bold tracking-tight">
+              {editing ? "Kartı düzenle" : "Yeni kart"}
+            </SheetTitle>
           </SheetHeader>
           <CardForm
             initial={editing}

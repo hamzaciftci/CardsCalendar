@@ -25,7 +25,7 @@ export function CardTile({
       type="button"
       onClick={onClick}
       className={
-        "panel group relative flex h-full w-full flex-col gap-3 overflow-hidden p-4 text-left transition-transform active:scale-[0.99] " +
+        "panel group relative flex h-full w-full flex-col gap-3 overflow-hidden p-4 text-left transition-transform duration-150 ease-out active:scale-[0.98] " +
         (card.isActive ? "" : "opacity-60")
       }
     >
@@ -37,7 +37,7 @@ export function CardTile({
       <div className="flex items-center gap-3">
         <div
           className="tabular flex h-10 w-10 flex-none items-center justify-center rounded-xl text-base font-bold text-[#04101f]"
-          style={{ backgroundColor: card.color, boxShadow: `0 0 22px ${card.color}55` }}
+          style={{ backgroundColor: card.color, boxShadow: `0 0 14px ${card.color}40` }}
         >
           {initials}
         </div>

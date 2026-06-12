@@ -125,9 +125,9 @@ function CalendarPage() {
                   key={i}
                   onClick={() => setSelected(date)}
                   className={
-                    "tabular relative flex aspect-square flex-col items-center justify-center rounded-xl text-sm transition " +
+                    "tabular relative flex aspect-square flex-col items-center justify-center rounded-xl text-sm transition-[color,background-color,box-shadow,transform] duration-150 ease-out active:scale-[0.97] " +
                     (isSelected
-                      ? "bg-primary font-semibold text-primary-foreground shadow-[0_0_20px_rgb(89_168_255_/_0.45)]"
+                      ? "bg-primary font-semibold text-primary-foreground shadow-[0_0_12px_rgb(89_168_255_/_0.3)]"
                       : isToday
                         ? "font-semibold text-primary ring-1 ring-inset ring-primary/60"
                         : "hover:bg-muted/70")

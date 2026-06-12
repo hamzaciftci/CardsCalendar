@@ -82,7 +82,7 @@ function SettingsPage() {
             Veri Sözümüz
           </p>
           <div className="mt-3 flex items-start gap-3">
-            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/15 shadow-[0_0_22px_rgb(43_227_164_/_0.2)]">
+            <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-success/15 shadow-[0_0_14px_rgb(43_227_164_/_0.15)]">
               <ShieldCheck className="h-5 w-5 text-success" />
             </div>
             <div className="space-y-2 text-[13px] leading-relaxed">

@@ -127,7 +127,7 @@ function SideNav() {
   return (
     <aside className="fixed inset-y-0 left-0 z-40 hidden w-64 flex-col border-r border-border bg-[#0a1426]/85 backdrop-blur-xl lg:flex">
       <div className="flex items-center gap-3 px-6 pb-10 pt-8">
-        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-primary/15 text-primary shadow-[0_0_24px_rgb(89_168_255_/_0.25)]">
+        <div className="flex h-10 w-10 flex-none items-center justify-center rounded-xl bg-primary/15 text-primary shadow-[0_0_16px_rgb(89_168_255_/_0.18)]">
           <Compass className="h-5 w-5" />
         </div>
         <div>
@@ -154,7 +154,7 @@ function SideNav() {
               }
             >
               {active && (
-                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_12px_rgb(89_168_255_/_0.8)]" />
+                <span className="absolute left-0 top-1/2 h-5 w-[3px] -translate-y-1/2 rounded-full bg-primary shadow-[0_0_8px_rgb(89_168_255_/_0.45)]" />
               )}
               <Icon
                 className={"h-[18px] w-[18px] " + (active ? "text-primary" : "")}
@@ -199,7 +199,7 @@ function BottomDock() {
               >
                 <Icon
                   className={
-                    "h-5 w-5 " + (active ? "drop-shadow-[0_0_8px_rgb(89_168_255_/_0.7)]" : "")
+                    "h-5 w-5 " + (active ? "drop-shadow-[0_0_6px_rgb(89_168_255_/_0.4)]" : "")
                   }
                   strokeWidth={active ? 2.4 : 2}
                 />

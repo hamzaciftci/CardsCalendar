@@ -163,7 +163,7 @@ export function CardForm({
               type="button"
               onClick={() => setColor(c)}
               className={
-                "h-9 w-9 rounded-full ring-2 ring-offset-2 ring-offset-background transition " +
+                "h-9 w-9 rounded-full ring-2 ring-offset-2 ring-offset-background transition-[box-shadow,transform] duration-150 ease-out active:scale-95 " +
                 (c === color ? "ring-foreground" : "ring-transparent")
               }
               style={{ backgroundColor: c }}

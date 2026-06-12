@@ -134,20 +134,21 @@
     box-shadow: var(--shadow-soft);
   }
   .glow-success {
-    text-shadow: 0 0 26px rgb(43 227 164 / 0.45);
+    text-shadow: 0 0 16px rgb(43 227 164 / 0.3);
   }
+  /* Sekme geçişlerinde sık görülür: <300ms + güçlü ease-out (anında tepki hissi) */
   .animate-rise {
-    animation: kp-rise 0.55s cubic-bezier(0.22, 0.8, 0.32, 1) both;
+    animation: kp-rise 0.28s cubic-bezier(0.23, 1, 0.32, 1) both;
   }
   .gauge-arc {
-    animation: kp-gauge 1s cubic-bezier(0.3, 0.8, 0.3, 1) both;
+    animation: kp-gauge 0.7s cubic-bezier(0.23, 1, 0.32, 1) both;
   }
 }
 
 @keyframes kp-rise {
   from {
     opacity: 0;
-    transform: translateY(14px);
+    transform: translateY(10px);
   }
   to {
     opacity: 1;
@@ -158,5 +159,22 @@
 @keyframes kp-gauge {
   from {
     stroke-dasharray: 0 100;
+  }
+}
+
+@keyframes kp-fade {
+  from {
+    opacity: 0;
+  }
+}
+
+/* Hareket azaltma: konum animasyonları kalkar, anlamayı kolaylaştıran
+   soluklaşma kalır */
+@media (prefers-reduced-motion: reduce) {
+  .animate-rise {
+    animation: kp-fade 0.18s ease-out both;
+  }
+  .gauge-arc {
+    animation: none;
   }
 }

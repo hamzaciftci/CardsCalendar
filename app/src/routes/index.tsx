@@ -198,7 +198,7 @@ function TodayPage() {
       <div>
         <PageHeader title="Bugün" subtitle={formatLongDate(new Date())} />
         <div className="panel animate-rise mx-auto max-w-xl p-8 text-center lg:p-12">
-          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[0_0_30px_rgb(89_168_255_/_0.25)]">
+          <div className="mx-auto mb-5 flex h-16 w-16 items-center justify-center rounded-2xl bg-primary/15 text-primary shadow-[0_0_20px_rgb(89_168_255_/_0.18)]">
             <Sparkles className="h-8 w-8" />
           </div>
           <h2 className="text-xl font-bold tracking-tight">
@@ -320,7 +320,7 @@ function TodayPage() {
                     setCalculated(false);
                   }}
                   className={
-                    "tabular rounded-full border px-3.5 py-1.5 text-sm font-medium transition " +
+                    "tabular rounded-full border px-3.5 py-1.5 text-sm font-medium transition-[color,background-color,border-color,transform] duration-150 ease-out active:scale-[0.97] " +
                     (amountStr === String(v)
                       ? "border-primary bg-primary/15 text-primary"
                       : "border-border bg-muted/40 text-foreground hover:border-muted-foreground/40")
@@ -335,7 +335,7 @@ function TodayPage() {
                   setAmountStr("");
                   setCalculated(false);
                 }}
-                className="rounded-full border border-border bg-muted/40 px-3.5 py-1.5 text-sm font-medium hover:border-muted-foreground/40"
+                className="rounded-full border border-border bg-muted/40 px-3.5 py-1.5 text-sm font-medium transition-[border-color,transform] duration-150 ease-out hover:border-muted-foreground/40 active:scale-[0.97]"
               >
                 Diğer
               </button>

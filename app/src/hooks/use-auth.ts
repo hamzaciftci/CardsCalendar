@@ -19,7 +19,9 @@ export function useAuth() {
   const signInWithEmail = (email: string) =>
     supabase!.auth.signInWithOtp({
       email,
-      options: { emailRedirectTo: window.location.origin },
+      // Giriş bağlantısı doğrudan uygulamaya düşürür; yeni kullanıcıda
+      // onboarding otomatik başlar (isOnboarded bayrağı henüz yoktur)
+      options: { emailRedirectTo: `${window.location.origin}/uygulama` },
     });
 
   const signOut = () => supabase!.auth.signOut();

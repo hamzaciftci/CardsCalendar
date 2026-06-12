@@ -9,11 +9,17 @@
 // Additionally, you should also exclude this file from your linter and/or formatter to prevent it from being checked or modified.
 
 import { Route as rootRouteImport } from './routes/__root'
+import { Route as UygulamaRouteImport } from './routes/uygulama'
 import { Route as TakvimRouteImport } from './routes/takvim'
 import { Route as KartlarimRouteImport } from './routes/kartlarim'
 import { Route as AyarlarRouteImport } from './routes/ayarlar'
 import { Route as IndexRouteImport } from './routes/index'
 
+const UygulamaRoute = UygulamaRouteImport.update({
+  id: '/uygulama',
+  path: '/uygulama',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const TakvimRoute = TakvimRouteImport.update({
   id: '/takvim',
   path: '/takvim',
@@ -40,12 +46,14 @@ export interface FileRoutesByFullPath {
   '/ayarlar': typeof AyarlarRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
+  '/uygulama': typeof UygulamaRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ayarlar': typeof AyarlarRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
+  '/uygulama': typeof UygulamaRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
@@ -53,13 +61,14 @@ export interface FileRoutesById {
   '/ayarlar': typeof AyarlarRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
+  '/uygulama': typeof UygulamaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ayarlar' | '/kartlarim' | '/takvim'
+  fullPaths: '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ayarlar' | '/kartlarim' | '/takvim'
-  id: '__root__' | '/' | '/ayarlar' | '/kartlarim' | '/takvim'
+  to: '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
+  id: '__root__' | '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -67,10 +76,18 @@ export interface RootRouteChildren {
   AyarlarRoute: typeof AyarlarRoute
   KartlarimRoute: typeof KartlarimRoute
   TakvimRoute: typeof TakvimRoute
+  UygulamaRoute: typeof UygulamaRoute
 }
 
 declare module '@tanstack/react-router' {
   interface FileRoutesByPath {
+    '/uygulama': {
+      id: '/uygulama'
+      path: '/uygulama'
+      fullPath: '/uygulama'
+      preLoaderRoute: typeof UygulamaRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/takvim': {
       id: '/takvim'
       path: '/takvim'
@@ -107,6 +124,7 @@ const rootRouteChildren: RootRouteChildren = {
   AyarlarRoute: AyarlarRoute,
   KartlarimRoute: KartlarimRoute,
   TakvimRoute: TakvimRoute,
+  UygulamaRoute: UygulamaRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)

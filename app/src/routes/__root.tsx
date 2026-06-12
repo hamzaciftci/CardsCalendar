@@ -115,7 +115,7 @@ function RootShell({ children }: { children: ReactNode }) {
 }
 
 const tabs = [
-  { to: "/", label: "Bugün", icon: Home },
+  { to: "/uygulama", label: "Bugün", icon: Home },
   { to: "/kartlarim", label: "Kartlarım", icon: CreditCard },
   { to: "/takvim", label: "Takvim", icon: CalendarDays },
   { to: "/ayarlar", label: "Ayarlar", icon: Settings },
@@ -210,16 +210,25 @@ function BottomDock() {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const pathname = useRouterState({ select: (s) => s.location.pathname });
+  // Vitrin sayfası ("/") kendi düzenini taşır; uygulama kabuğu app rotalarında
+  const isLanding = pathname === "/";
 
   return (
     <QueryClientProvider client={queryClient}>
-      <SideNav />
-      <div className="lg:pl-64">
-        <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 lg:px-10 lg:pb-16">
-          <Outlet />
-        </main>
-      </div>
-      <BottomDock />
+      {isLanding ? (
+        <Outlet />
+      ) : (
+        <>
+          <SideNav />
+          <div className="lg:pl-64">
+            <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 lg:px-10 lg:pb-16">
+              <Outlet />
+            </main>
+          </div>
+          <BottomDock />
+        </>
+      )}
     </QueryClientProvider>
   );
 }

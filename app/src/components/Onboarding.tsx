@@ -1,14 +1,18 @@
 import { useState } from "react";
+import { useRouter } from "@tanstack/react-router";
 import { setOnboarded } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Compass, CreditCard } from "lucide-react";
 
 export function Onboarding({ onDone }: { onDone: () => void }) {
+  const router = useRouter();
   const [step, setStep] = useState(0);
 
-  const finish = () => {
+  const finish = (goToCards = false) => {
     setOnboarded();
     onDone();
+    // Son adımın CTA'sı kullanıcıyı doğrudan ilk kartını ekleyeceği yere taşır
+    if (goToCards) void router.navigate({ to: "/kartlarim" });
   };
 
   const slides = [
@@ -37,7 +41,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <button
-        onClick={finish}
+        onClick={() => finish()}
         className="tabular absolute right-5 top-5 text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
       >
         Geç
@@ -66,7 +70,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         </div>
         <Button
           className="h-12 w-full text-base font-semibold"
-          onClick={() => (step === slides.length - 1 ? finish() : setStep(step + 1))}
+          onClick={() => (step === slides.length - 1 ? finish(true) : setStep(step + 1))}
         >
           {s.cta}
         </Button>

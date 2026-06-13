@@ -5,7 +5,6 @@ import { DayStrip } from "@/components/DayStrip";
 import { Button } from "@/components/ui/button";
 import { useAuth } from "@/hooks/use-auth";
 import { interestFreeDays, normalize } from "@/engine";
-import { isOnboarded, loadCards } from "@/lib/storage";
 import {
   ArrowRight,
   CalendarDays,
@@ -86,10 +85,10 @@ function LandingPage() {
   const [isReturning, setIsReturning] = useState(false);
   const demoDays = interestFreeDays(DEMO_CARD, normalize(new Date())).days;
 
-  // Vitrin herkese görünür (yönlendirme YOK). Geri dönen/oturumlu kullanıcıyı
-  // yalnızca tanıyıp üst bar ve hero CTA'sını "Uygulamaya git"e çeviririz.
+  // Vitrin herkese görünür (yönlendirme YOK). Oturum açık kullanıcıda üst bar ve
+  // hero CTA'sı "Uygulamaya git"e döner.
   useEffect(() => {
-    setIsReturning(Boolean(session) || isOnboarded() || loadCards().length > 0);
+    setIsReturning(Boolean(session));
   }, [session]);
 
   return (

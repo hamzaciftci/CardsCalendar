@@ -42,10 +42,6 @@ function AuthPage() {
   const cloudOff = mounted && !enabled;
 
   const send = async () => {
-    if (!enabled) {
-      void router.navigate({ to: "/uygulama" });
-      return;
-    }
     if (!email.includes("@")) return;
     setState("sending");
     const { error } = await signInWithEmail(email.trim());
@@ -143,21 +139,10 @@ function AuthPage() {
                 )}
 
                 {cloudOff && (
-                  <p className="mt-3 rounded-lg bg-muted/60 px-3 py-2 text-[12px] text-muted-foreground">
-                    Bulut hesapları çok yakında. Şimdilik hesapsız başlayabilir, kartlarını bu
-                    cihazda yönetebilirsin.
+                  <p className="mt-3 rounded-lg bg-warning/15 px-3 py-2 text-[12px] text-warning-foreground">
+                    Giriş servisi şu an yapılandırılıyor; çok yakında aktif olacak.
                   </p>
                 )}
-
-                <div className="my-5 flex items-center gap-3 text-[11px] uppercase tracking-widest text-muted-foreground/60">
-                  <span className="h-px flex-1 bg-border" />
-                  veya
-                  <span className="h-px flex-1 bg-border" />
-                </div>
-
-                <Button asChild variant="outline" className="h-11 w-full">
-                  <Link to="/uygulama">Hesapsız devam et</Link>
-                </Button>
 
                 <p className="mt-4 text-center text-[11px] leading-relaxed text-muted-foreground">
                   Devam ederek kart verilerinin hesabında saklanmasını kabul etmiş olursun. Kart

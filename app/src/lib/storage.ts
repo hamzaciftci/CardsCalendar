@@ -1,8 +1,8 @@
 import type { Card } from "@/engine";
 
 const KEY = "kartpilot.cards.v1";
-const ONBOARD_KEY = "kartpilot.onboarded.v1";
-const SEED_KEY = "kartpilot.seeded.v1";
+// Eski sürümlerden kalmış olabilecek anahtarlar (temizlik için)
+const LEGACY_KEYS = ["kartpilot.onboarded.v1", "kartpilot.seeded.v1"];
 
 export const PRESET_COLORS = [
   "#1E5AF5",
@@ -31,6 +31,8 @@ export const TR_BANKS = [
   "Diğer",
 ];
 
+// localStorage yalnızca buluttaki verinin yerel önbelleğidir (anlık çizim için).
+// Kaynak gerçek, oturum açık kullanıcının Supabase'teki satırlarıdır.
 export function loadCards(): Card[] {
   if (typeof window === "undefined") return [];
   try {
@@ -52,66 +54,7 @@ export function saveCards(cards: Card[]): void {
 export function clearAll(): void {
   if (typeof window === "undefined") return;
   localStorage.removeItem(KEY);
-  localStorage.removeItem(ONBOARD_KEY);
-  localStorage.removeItem(SEED_KEY);
-}
-
-export function isOnboarded(): boolean {
-  if (typeof window === "undefined") return true;
-  return localStorage.getItem(ONBOARD_KEY) === "1";
-}
-
-export function setOnboarded(): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(ONBOARD_KEY, "1");
-}
-
-export function hasSeeded(): boolean {
-  if (typeof window === "undefined") return true;
-  return localStorage.getItem(SEED_KEY) === "1";
-}
-
-export function markSeeded(): void {
-  if (typeof window === "undefined") return;
-  localStorage.setItem(SEED_KEY, "1");
-}
-
-export function seedDemoCards(): Card[] {
-  return [
-    {
-      id: crypto.randomUUID(),
-      name: "Bonus — Örnek kart",
-      bankName: "Garanti BBVA",
-      color: "#16C784",
-      statementDay: 1,
-      graceDays: 10,
-      totalLimit: 30000,
-      availableLimit: 12400,
-      isActive: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Axess — Örnek kart",
-      bankName: "Akbank",
-      color: "#E5484D",
-      statementDay: 9,
-      graceDays: 10,
-      totalLimit: 25000,
-      availableLimit: 18000,
-      isActive: true,
-    },
-    {
-      id: crypto.randomUUID(),
-      name: "Maximum — Örnek kart",
-      bankName: "İş Bankası",
-      color: "#1E5AF5",
-      statementDay: 17,
-      graceDays: 10,
-      totalLimit: 20000,
-      availableLimit: 9000,
-      isActive: true,
-    },
-  ];
+  for (const k of LEGACY_KEYS) localStorage.removeItem(k);
 }
 
 export function computeGraceDays(statementDay: number, dueDay: number): number {

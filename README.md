@@ -44,7 +44,12 @@ npm run build      # production build → dist/client + dist/server (SSR)
 
 ## SaaS / Bulut senkron kurulumu (Supabase)
 
-Uygulama env değişkenleri olmadan **misafir modda** çalışır (localStorage).
+> **Go-live (zorunlu hesap):** Artık misafir modu yoktur — tüm app rotaları
+> (`/uygulama`, `/kartlarim`, `/takvim`, `/ayarlar`) oturum ister; yoksa `/giris`'e
+> yönlendirir. Bu yüzden aşağıdaki Vercel env adımı **zorunludur**; env yoksa canlıda
+> kimse giriş yapamaz (vitrin + `/giris` "yapılandırılıyor" mesajı görünür, kilitlenmez).
+> Onboarding hesaba bağlıdır (Supabase `user_metadata.onboarded`), demo kart yoktur.
+
 Hesap + cihazlar arası senkronu açmak için:
 
 1. [supabase.com](https://supabase.com) → **New Project** (bölge: `eu-central-1` Frankfurt — KVKK notu için).

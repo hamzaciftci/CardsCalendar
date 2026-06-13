@@ -8,10 +8,12 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { type ReactNode } from "react";
+import { useEffect, useState, type ReactNode } from "react";
 import { Home, CreditCard, CalendarDays, Settings, Compass, ShieldCheck } from "lucide-react";
 
 import appCss from "../styles.css?url";
+import { useAuth } from "@/hooks/use-auth";
+import { Onboarding } from "@/components/Onboarding";
 
 function NotFoundComponent() {
   return (
@@ -208,6 +210,47 @@ function BottomDock() {
   );
 }
 
+function FullScreenLoader() {
+  return (
+    <div className="flex min-h-screen items-center justify-center">
+      <div className="h-7 w-7 animate-spin rounded-full border-2 border-border border-t-foreground" />
+    </div>
+  );
+}
+
+/**
+ * App rotaları için kapı: oturum zorunludur (yoksa /giris'e yönlendirir);
+ * oturum açık ama onboarding tamamlanmamışsa onboarding gösterir.
+ */
+function AppGate({ children }: { children: ReactNode }) {
+  const router = useRouter();
+  const { session, loading, needsOnboarding, completeOnboarding } = useAuth();
+  const [mounted, setMounted] = useState(false);
+  useEffect(() => setMounted(true), []);
+
+  useEffect(() => {
+    if (mounted && !loading && !session) {
+      router.navigate({ to: "/giris", search: { mode: "giris" }, replace: true });
+    }
+  }, [mounted, loading, session, router]);
+
+  // SSR + ilk istemci render + auth çözülürken ya da yönlendirme sırasında
+  if (!mounted || loading || !session) return <FullScreenLoader />;
+
+  if (needsOnboarding) {
+    return (
+      <Onboarding
+        onDone={async (goToCards) => {
+          await completeOnboarding();
+          if (goToCards) void router.navigate({ to: "/kartlarim" });
+        }}
+      />
+    );
+  }
+
+  return <>{children}</>;
+}
+
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
@@ -219,7 +262,7 @@ function RootComponent() {
       {bareLayout ? (
         <Outlet />
       ) : (
-        <>
+        <AppGate>
           <SideNav />
           <div className="lg:pl-64">
             <main className="mx-auto w-full max-w-6xl px-4 pb-32 sm:px-6 lg:px-10 lg:pb-16">
@@ -227,7 +270,7 @@ function RootComponent() {
             </main>
           </div>
           <BottomDock />
-        </>
+        </AppGate>
       )}
     </QueryClientProvider>
   );

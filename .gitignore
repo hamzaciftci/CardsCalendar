@@ -16,6 +16,12 @@ dist-ssr/
 # arşivler (Lovable dönemi dışa aktarımları)
 *.zip
 
+# yerel MCP sunucu yapılandırması (kişisel; gizli değil ama repoya gerekmez)
+.mcp.json
+
+# Claude Code yerel/kişisel ayarlar (izin allowlist'i vb.)
+.claude/settings.local.json
+
 # editör/işletim sistemi
 .DS_Store
 .idea/

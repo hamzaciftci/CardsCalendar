@@ -1,6 +1,6 @@
 import { useEffect, useState, useCallback } from "react";
 import type { Card } from "@/engine";
-import { loadCards, saveCards, hasSeeded, markSeeded, seedDemoCards } from "@/lib/storage";
+import { loadCards, saveCards } from "@/lib/storage";
 import { useAuth } from "@/hooks/use-auth";
 import { fetchCloudCards, upsertCloudCards, deleteCloudCard } from "@/lib/cloud";
 import { isCloudEnabled } from "@/lib/supabase";
@@ -11,19 +11,14 @@ export function useCards() {
   const [cards, setCards] = useState<Card[]>([]);
   const [ready, setReady] = useState(false);
 
-  // Yerel öncelikli: önce cihazdaki veri, ilk açılışta örnek kartlar
+  // Anlık çizim için yerel önbellek (demo/seed YOK — yeni kullanıcı boş başlar)
   useEffect(() => {
-    let initial = loadCards();
-    if (initial.length === 0 && !hasSeeded()) {
-      initial = seedDemoCards();
-      saveCards(initial);
-      markSeeded();
-    }
-    setCards(initial);
+    setCards(loadCards());
     setReady(true);
   }, []);
 
-  // Girişte bulutla eşitle: bulut doluysa bulut kazanır, boşsa yerel yüklenir
+  // Oturum açılınca buluttan yükle (kaynak gerçek bulut). Yerel kart varsa
+  // (ör. çevrimdışı eklenmiş) ve bulut boşsa buluta taşı.
   useEffect(() => {
     if (!userId || !isCloudEnabled()) return;
     let cancelled = false;

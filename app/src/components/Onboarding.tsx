@@ -1,19 +1,15 @@
 import { useState } from "react";
-import { useRouter } from "@tanstack/react-router";
-import { setOnboarded } from "@/lib/storage";
 import { Button } from "@/components/ui/button";
 import { ShieldCheck, Compass, CreditCard } from "lucide-react";
 
-export function Onboarding({ onDone }: { onDone: () => void }) {
-  const router = useRouter();
+/**
+ * Hesaba bağlı onboarding (3 ekran). Tamamlanınca / geçilince onDone çağrılır;
+ * üst katman (AppGate) bunu user_metadata.onboarded = true olarak işaretler.
+ * onDone(true) → "ilk kartını ekle"ye yönlendirilmek istendiğini belirtir.
+ */
+export function Onboarding({ onDone }: { onDone: (goToCards: boolean) => void | Promise<void> }) {
   const [step, setStep] = useState(0);
-
-  const finish = (goToCards = false) => {
-    setOnboarded();
-    onDone();
-    // Son adımın CTA'sı kullanıcıyı doğrudan ilk kartını ekleyeceği yere taşır
-    if (goToCards) void router.navigate({ to: "/kartlarim" });
-  };
+  const [busy, setBusy] = useState(false);
 
   const slides = [
     {
@@ -30,19 +26,26 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
     },
     {
       icon: <CreditCard className="h-14 w-14 text-primary" />,
-      title: "Hadi başlayalım",
-      body: "Üç örnek kartla başlattık. Düzenleyebilir, silebilir ya da kendi kartlarını ekleyebilirsin.",
+      title: "İlk kartını ekleyelim",
+      body: "Kart adı, banka ve kesim/son ödeme günlerini gir; gerisini KartPilot hesaplasın.",
       cta: "İlk kartını ekle",
     },
   ];
+
+  const finish = async (goToCards: boolean) => {
+    if (busy) return;
+    setBusy(true);
+    await onDone(goToCards);
+  };
 
   const s = slides[step];
 
   return (
     <div className="fixed inset-0 z-50 flex flex-col bg-background">
       <button
-        onClick={() => finish()}
-        className="tabular absolute right-5 top-5 text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground"
+        onClick={() => void finish(false)}
+        disabled={busy}
+        className="tabular absolute right-5 top-5 text-[11px] uppercase tracking-widest text-muted-foreground hover:text-foreground disabled:opacity-50"
       >
         Geç
       </button>
@@ -62,7 +65,7 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
             <span
               key={i}
               className={
-                "h-1.5 rounded-full transition-[width,background-color,box-shadow] duration-200 ease-out " +
+                "h-1.5 rounded-full transition-[width,background-color] duration-200 ease-out " +
                 (i === step ? "w-7 bg-primary" : "w-1.5 bg-border")
               }
             />
@@ -70,7 +73,8 @@ export function Onboarding({ onDone }: { onDone: () => void }) {
         </div>
         <Button
           className="h-12 w-full text-base font-semibold"
-          onClick={() => (step === slides.length - 1 ? finish(true) : setStep(step + 1))}
+          disabled={busy}
+          onClick={() => (step === slides.length - 1 ? void finish(true) : setStep(step + 1))}
         >
           {s.cta}
         </Button>

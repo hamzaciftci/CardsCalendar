@@ -1,7 +1,6 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 import { useMemo, useState } from "react";
 import { useCards } from "@/hooks/use-cards";
-import { Onboarding } from "@/components/Onboarding";
 import { PageHeader } from "@/components/PageHeader";
 import { DayStrip } from "@/components/DayStrip";
 import { Gauge } from "@/components/Gauge";
@@ -23,7 +22,6 @@ import {
   toDateInputValue,
   fromDateInputValue,
 } from "@/lib/format";
-import { isOnboarded } from "@/lib/storage";
 import { AlertTriangle, CalendarClock, Lightbulb, Sparkles } from "lucide-react";
 
 export const Route = createFileRoute("/uygulama")({
@@ -101,9 +99,6 @@ function UpcomingEvents({ cards }: { cards: Card[] }) {
 
 function TodayPage() {
   const { cards, ready } = useCards();
-  const [showOnboarding, setShowOnboarding] = useState<boolean>(() =>
-    typeof window === "undefined" ? false : !isOnboarded(),
-  );
   const [amountStr, setAmountStr] = useState<string>("");
   const [spendDateStr, setSpendDateStr] = useState<string>(() => toDateInputValue(new Date()));
   const [calculated, setCalculated] = useState<boolean>(false);
@@ -134,8 +129,6 @@ function TodayPage() {
   }, [cards]);
 
   if (!ready) return null;
-
-  if (showOnboarding) return <Onboarding onDone={() => setShowOnboarding(false)} />;
 
   if (cards.length === 0) {
     return (

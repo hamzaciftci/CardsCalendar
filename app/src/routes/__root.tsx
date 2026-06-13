@@ -211,12 +211,12 @@ function BottomDock() {
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
   const pathname = useRouterState({ select: (s) => s.location.pathname });
-  // Vitrin sayfası ("/") kendi düzenini taşır; uygulama kabuğu app rotalarında
-  const isLanding = pathname === "/";
+  // Vitrin ("/") ve kimlik ("/giris") kendi düzenini taşır; kabuk app rotalarında
+  const bareLayout = pathname === "/" || pathname === "/giris";
 
   return (
     <QueryClientProvider client={queryClient}>
-      {isLanding ? (
+      {bareLayout ? (
         <Outlet />
       ) : (
         <>

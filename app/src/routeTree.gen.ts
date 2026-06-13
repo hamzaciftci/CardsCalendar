@@ -12,6 +12,7 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as UygulamaRouteImport } from './routes/uygulama'
 import { Route as TakvimRouteImport } from './routes/takvim'
 import { Route as KartlarimRouteImport } from './routes/kartlarim'
+import { Route as GirisRouteImport } from './routes/giris'
 import { Route as AyarlarRouteImport } from './routes/ayarlar'
 import { Route as IndexRouteImport } from './routes/index'
 
@@ -30,6 +31,11 @@ const KartlarimRoute = KartlarimRouteImport.update({
   path: '/kartlarim',
   getParentRoute: () => rootRouteImport,
 } as any)
+const GirisRoute = GirisRouteImport.update({
+  id: '/giris',
+  path: '/giris',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const AyarlarRoute = AyarlarRouteImport.update({
   id: '/ayarlar',
   path: '/ayarlar',
@@ -44,6 +50,7 @@ const IndexRoute = IndexRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/ayarlar': typeof AyarlarRoute
+  '/giris': typeof GirisRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
   '/uygulama': typeof UygulamaRoute
@@ -51,6 +58,7 @@ export interface FileRoutesByFullPath {
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/ayarlar': typeof AyarlarRoute
+  '/giris': typeof GirisRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
   '/uygulama': typeof UygulamaRoute
@@ -59,21 +67,36 @@ export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
   '/ayarlar': typeof AyarlarRoute
+  '/giris': typeof GirisRoute
   '/kartlarim': typeof KartlarimRoute
   '/takvim': typeof TakvimRoute
   '/uygulama': typeof UygulamaRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
+  fullPaths:
+    | '/'
+    | '/ayarlar'
+    | '/giris'
+    | '/kartlarim'
+    | '/takvim'
+    | '/uygulama'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
-  id: '__root__' | '/' | '/ayarlar' | '/kartlarim' | '/takvim' | '/uygulama'
+  to: '/' | '/ayarlar' | '/giris' | '/kartlarim' | '/takvim' | '/uygulama'
+  id:
+    | '__root__'
+    | '/'
+    | '/ayarlar'
+    | '/giris'
+    | '/kartlarim'
+    | '/takvim'
+    | '/uygulama'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
   AyarlarRoute: typeof AyarlarRoute
+  GirisRoute: typeof GirisRoute
   KartlarimRoute: typeof KartlarimRoute
   TakvimRoute: typeof TakvimRoute
   UygulamaRoute: typeof UygulamaRoute
@@ -102,6 +125,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof KartlarimRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/giris': {
+      id: '/giris'
+      path: '/giris'
+      fullPath: '/giris'
+      preLoaderRoute: typeof GirisRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/ayarlar': {
       id: '/ayarlar'
       path: '/ayarlar'
@@ -122,6 +152,7 @@ declare module '@tanstack/react-router' {
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
   AyarlarRoute: AyarlarRoute,
+  GirisRoute: GirisRoute,
   KartlarimRoute: KartlarimRoute,
   TakvimRoute: TakvimRoute,
   UygulamaRoute: UygulamaRoute,

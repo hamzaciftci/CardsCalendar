@@ -11,7 +11,7 @@ Birden fazla kredi kartı olan kullanıcıya, **hangi gün hangi kartla harcarsa
 ├── lovable-starter-prompt.md # (arşiv) ilk sürümü üreten başlangıç promptu
 ├── app/                      # ⭐ Uygulama — TanStack Start + React 19 + TypeScript
 │   ├── src/engine/           #   hesaplama motoru + 36 birim testi (TEK doğru kaynak)
-│   ├── src/routes/           #   / (vitrin+kayıt) · /uygulama (Bugün) · Kartlarım · Takvim · Ayarlar
+│   ├── src/routes/           #   / (vitrin) · /giris (giriş+kayıt) · /uygulama (Bugün) · Kartlarım · Takvim · Ayarlar
 │   ├── src/components/       #   CardForm, CardTile, Onboarding + shadcn/ui
 │   └── src/lib/              #   storage (localStorage), format, SSR hata katmanı
 └── supabase/
@@ -57,12 +57,16 @@ Hesap + cihazlar arası senkronu açmak için:
    - `VITE_SUPABASE_ANON_KEY` = anon anahtar
    → kaydet, **Redeploy**. Yerel için: `app/.env.example` → `app/.env`.
 
-Env'ler tanımlanınca vitrin sayfasındaki (`/`) **Kayıt ol** formu ve Ayarlar'daki
-**Hesap** paneli aktifleşir: e-postayla şifresiz giriş (magic link), kartlar
-buluta yedeklenir ve cihazlar arası eşitlenir. Kayıt akışı: vitrin → e-posta →
-gelen kutusundaki bağlantı → `/uygulama` → yeni kullanıcıda onboarding otomatik
-başlar ve "İlk kartını ekle" ile Kartlarım'a taşır. Aktif kullanıcı `/`'a
-girerse otomatik `/uygulama`'ya yönlenir. Senkron kuralı: girişte bulut doluysa bulut kazanır; boşsa yerel
+Env'ler tanımlanınca vitrinin sağ üstündeki **Giriş yap / Kayıt ol** butonları,
+`/giris` kimlik sayfası ve Ayarlar'daki **Hesap** paneli aktifleşir. Kayıt akışı:
+vitrin → sağ üst **Kayıt ol** → `/giris` (e-posta, şifresiz) → gelen kutusundaki
+bağlantı → `/uygulama` → yeni kullanıcıda onboarding otomatik başlar ve "İlk
+kartını ekle" ile Kartlarım'a taşır.
+
+`/giris` tek sayfada hem giriş hem kaydı taşır (magic link ikisini ayırmaz);
+`?mode=giris|kayit` yalnızca başlık/buton metnini değiştirir. Oturum açık kullanıcı
+`/giris`'e veya `/`'a girerse otomatik `/uygulama`'ya yönlenir. Supabase env'leri
+yokken `/giris` "hesapsız devam et" yolunu sunar (uygulama misafir modda çalışır). Senkron kuralı: girişte bulut doluysa bulut kazanır; boşsa yerel
 kartlar yüklenir; sonraki tüm değişiklikler anında buluta yazılır.
 Faturalama (Stripe/premium) Faz 2'de eklenecek.
 

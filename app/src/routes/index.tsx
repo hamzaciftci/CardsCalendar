@@ -1,5 +1,5 @@
-import { createFileRoute, Link, useRouter } from "@tanstack/react-router";
-import { useEffect } from "react";
+import { createFileRoute, Link } from "@tanstack/react-router";
+import { useEffect, useState } from "react";
 import { Gauge } from "@/components/Gauge";
 import { DayStrip } from "@/components/DayStrip";
 import { Button } from "@/components/ui/button";
@@ -82,16 +82,15 @@ const FEATURES = [
 ];
 
 function LandingPage() {
-  const router = useRouter();
   const { session } = useAuth();
+  const [isReturning, setIsReturning] = useState(false);
   const demoDays = interestFreeDays(DEMO_CARD, normalize(new Date())).days;
 
-  // Oturum açmış ya da daha önce kullanmış kullanıcıyı doğrudan uygulamaya al
+  // Vitrin herkese görünür (yönlendirme YOK). Geri dönen/oturumlu kullanıcıyı
+  // yalnızca tanıyıp üst bar ve hero CTA'sını "Uygulamaya git"e çeviririz.
   useEffect(() => {
-    if (session || isOnboarded() || loadCards().length > 0) {
-      router.navigate({ to: "/uygulama", replace: true });
-    }
-  }, [session, router]);
+    setIsReturning(Boolean(session) || isOnboarded() || loadCards().length > 0);
+  }, [session]);
 
   return (
     <div className="min-h-screen">
@@ -104,16 +103,24 @@ function LandingPage() {
           <span className="text-[17px] font-bold tracking-tight">KartPilot</span>
         </div>
         <nav className="flex items-center gap-2">
-          <Button asChild variant="ghost" size="sm">
-            <Link to="/giris" search={{ mode: "giris" }}>
-              Giriş yap
-            </Link>
-          </Button>
-          <Button asChild size="sm" className="font-semibold">
-            <Link to="/giris" search={{ mode: "kayit" }}>
-              Kayıt ol
-            </Link>
-          </Button>
+          {isReturning ? (
+            <Button asChild size="sm" className="font-semibold">
+              <Link to="/uygulama">Uygulamaya git</Link>
+            </Button>
+          ) : (
+            <>
+              <Button asChild variant="ghost" size="sm">
+                <Link to="/giris" search={{ mode: "giris" }}>
+                  Giriş yap
+                </Link>
+              </Button>
+              <Button asChild size="sm" className="font-semibold">
+                <Link to="/giris" search={{ mode: "kayit" }}>
+                  Kayıt ol
+                </Link>
+              </Button>
+            </>
+          )}
         </nav>
       </header>
 
@@ -134,11 +141,19 @@ function LandingPage() {
               harcamada hangi kartı kullanacağını söyler — sen sadece onayla.
             </p>
             <div className="mt-7 flex flex-wrap items-center gap-3">
-              <Button asChild className="h-12 px-7 text-base font-semibold">
-                <Link to="/giris" search={{ mode: "kayit" }}>
-                  Ücretsiz başla <ArrowRight className="ml-1.5 h-4 w-4" />
-                </Link>
-              </Button>
+              {isReturning ? (
+                <Button asChild className="h-12 px-7 text-base font-semibold">
+                  <Link to="/uygulama">
+                    Uygulamaya git <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Link>
+                </Button>
+              ) : (
+                <Button asChild className="h-12 px-7 text-base font-semibold">
+                  <Link to="/giris" search={{ mode: "kayit" }}>
+                    Ücretsiz başla <ArrowRight className="ml-1.5 h-4 w-4" />
+                  </Link>
+                </Button>
+              )}
               <Button asChild variant="outline" className="h-12 px-6 text-base">
                 <a href="#nasil">Nasıl çalışır?</a>
               </Button>

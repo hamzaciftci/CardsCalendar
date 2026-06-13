@@ -65,8 +65,10 @@ kartını ekle" ile Kartlarım'a taşır.
 
 `/giris` tek sayfada hem giriş hem kaydı taşır (magic link ikisini ayırmaz);
 `?mode=giris|kayit` yalnızca başlık/buton metnini değiştirir. Oturum açık kullanıcı
-`/giris`'e veya `/`'a girerse otomatik `/uygulama`'ya yönlenir. Supabase env'leri
-yokken `/giris` "hesapsız devam et" yolunu sunar (uygulama misafir modda çalışır). Senkron kuralı: girişte bulut doluysa bulut kazanır; boşsa yerel
+`/giris`'e girerse `/uygulama`'ya yönlenir. **Vitrin (`/`) herkese açık kalır —
+yönlendirme yok;** geri dönen/oturumlu kullanıcıda sağ üst ve hero CTA'sı
+"Uygulamaya git"e döner. Supabase env'leri yokken `/giris` "hesapsız devam et"
+yolunu sunar (uygulama misafir modda çalışır). Senkron kuralı: girişte bulut doluysa bulut kazanır; boşsa yerel
 kartlar yüklenir; sonraki tüm değişiklikler anında buluta yazılır.
 Faturalama (Stripe/premium) Faz 2'de eklenecek.
 

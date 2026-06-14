@@ -27,7 +27,7 @@ alter table public.profiles enable row level security;
 
 create policy "profiles_own" on public.profiles
   for all to authenticated
-  using (auth.uid() = id) with check (auth.uid() = id);
+  using ((select auth.uid()) = id) with check ((select auth.uid()) = id);
 
 -- Yeni auth kullanıcısı oluşunca profil satırı otomatik açılır
 create or replace function public.handle_new_user()
@@ -75,7 +75,7 @@ alter table public.cards enable row level security;
 
 create policy "cards_own" on public.cards
   for all to authenticated
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 -- updated_at otomatik güncellensin
 create or replace function public.set_updated_at()
@@ -114,9 +114,9 @@ alter table public.billing_cycles enable row level security;
 create policy "billing_cycles_own" on public.billing_cycles
   for all to authenticated
   using (exists (select 1 from public.cards c
-                 where c.id = card_id and c.user_id = auth.uid()))
+                 where c.id = card_id and c.user_id = (select auth.uid())))
   with check (exists (select 1 from public.cards c
-                      where c.id = card_id and c.user_id = auth.uid()));
+                      where c.id = card_id and c.user_id = (select auth.uid())));
 
 -- ---------------------------------------------------------------------
 -- PAYMENTS — ödeme işaretlemeleri (v1.1)
@@ -137,9 +137,9 @@ alter table public.payments enable row level security;
 create policy "payments_own" on public.payments
   for all to authenticated
   using (exists (select 1 from public.cards c
-                 where c.id = card_id and c.user_id = auth.uid()))
+                 where c.id = card_id and c.user_id = (select auth.uid())))
   with check (exists (select 1 from public.cards c
-                      where c.id = card_id and c.user_id = auth.uid()));
+                      where c.id = card_id and c.user_id = (select auth.uid())));
 
 -- ---------------------------------------------------------------------
 -- SPENDING_SIMULATIONS — "son hesaplamalarım" + ürün analitiği
@@ -161,7 +161,7 @@ alter table public.spending_simulations enable row level security;
 
 create policy "simulations_own" on public.spending_simulations
   for all to authenticated
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 -- ---------------------------------------------------------------------
 -- NOTIFICATIONS — planlanan/gönderilen bildirimler
@@ -190,7 +190,7 @@ alter table public.notifications enable row level security;
 
 create policy "notifications_own" on public.notifications
   for all to authenticated
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
 
 -- ---------------------------------------------------------------------
 -- CAMPAIGNS — kullanıcı girişli kampanyalar (v1.1)
@@ -219,9 +219,9 @@ alter table public.campaigns enable row level security;
 create policy "campaigns_own" on public.campaigns
   for all to authenticated
   using (exists (select 1 from public.cards c
-                 where c.id = card_id and c.user_id = auth.uid()))
+                 where c.id = card_id and c.user_id = (select auth.uid())))
   with check (exists (select 1 from public.cards c
-                      where c.id = card_id and c.user_id = auth.uid()));
+                      where c.id = card_id and c.user_id = (select auth.uid())));
 
 -- ---------------------------------------------------------------------
 -- USER_PREFERENCES
@@ -241,12 +241,29 @@ alter table public.user_preferences enable row level security;
 
 create policy "preferences_own" on public.user_preferences
   for all to authenticated
-  using (auth.uid() = user_id) with check (auth.uid() = user_id);
+  using ((select auth.uid()) = user_id) with check ((select auth.uid()) = user_id);
+
+-- ---------------------------------------------------------------------
+-- SERTLEŞTİRME (Supabase advisor önerileri — migration: harden_rls_and_functions)
+-- RLS politikaları yukarıda (select auth.uid()) ile yazıldı (initplan perf).
+-- ---------------------------------------------------------------------
+-- SECURITY DEFINER fonksiyonları REST API'den (rpc) çağrılamasın + sabit search_path
+revoke execute on function public.handle_new_user() from anon, authenticated, public;
+alter function public.handle_new_user() set search_path = '';
+revoke execute on function public.set_updated_at() from anon, authenticated, public;
+alter function public.set_updated_at() set search_path = '';
+
+-- FK'leri kapsayan indeksler (performans)
+create index if not exists notifications_card_idx on public.notifications (card_id);
+create index if not exists payments_cycle_idx on public.payments (cycle_id);
+create index if not exists simulations_card_idx on public.spending_simulations (recommended_card_id);
 
 -- =====================================================================
 -- Son. Sonraki adımlar (şema dışı, Supabase panelinden):
---  1. Auth → Providers: Email (magic link) + Google'ı aç.
---  2. Auth → URL Configuration: site URL'ini ekle.
+--  1. Auth → Providers: Email (magic link) açık olmalı.
+--  2. Auth → URL Configuration: Site URL = production adresi (localhost DEĞİL),
+--     Redirect URLs'e production /uygulama + localhost dev eklenmeli.
+--     (Aksi halde doğrulama/giriş bağlantısı localhost'a yönlenir.)
 --  3. Faz 2'de bildirim cron'u: pg_cron extension + Edge Function
 --     (her gün 09:00 Europe/Istanbul'da yarın/3 gün sonrası son ödemeleri tara).
 -- =====================================================================

@@ -24,10 +24,15 @@ export function useAuth() {
   const signInWithEmail = (email: string) =>
     supabase!.auth.signInWithOtp({
       email,
-      // Giriş bağlantısı doğrudan uygulamaya düşürür; yeni kullanıcıda
-      // onboarding (user_metadata.onboarded yok) otomatik başlar.
+      // Web: e-postadaki bağlantı doğrudan uygulamaya düşürür.
+      // Mobil (WebView): bağlantı yerine e-postadaki 6 haneli kod verifyOtp ile
+      // uygulama içinde doğrulanır (link Chrome'da açıldığı için WebView'a dönmez).
       options: { emailRedirectTo: `${window.location.origin}/uygulama` },
     });
+
+  // E-postadaki 6 haneli kodu doğrula (web + mobil ortak yol)
+  const verifyOtp = (email: string, token: string) =>
+    supabase!.auth.verifyOtp({ email, token, type: "email" });
 
   // Onboarding durumu hesaba bağlı tutulur (cihazdan bağımsız, kalıcı).
   const completeOnboarding = () => supabase!.auth.updateUser({ data: { onboarded: true } });
@@ -47,6 +52,7 @@ export function useAuth() {
     enabled,
     needsOnboarding,
     signInWithEmail,
+    verifyOtp,
     completeOnboarding,
     signOut,
   };

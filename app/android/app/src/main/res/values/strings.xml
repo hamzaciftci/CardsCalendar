@@ -1,0 +1,7 @@
+<?xml version='1.0' encoding='utf-8'?>
+<resources>
+    <string name="app_name">KartPilot</string>
+    <string name="title_activity_main">KartPilot</string>
+    <string name="package_name">com.kartpilot.app</string>
+    <string name="custom_url_scheme">com.kartpilot.app</string>
+</resources>

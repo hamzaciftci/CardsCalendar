@@ -26,10 +26,13 @@ export const Route = createFileRoute("/giris")({
 function AuthPage() {
   const { mode } = Route.useSearch();
   const router = useRouter();
-  const { session, enabled, signInWithEmail } = useAuth();
+  const { session, enabled, signInWithEmail, verifyOtp } = useAuth();
   const [mounted, setMounted] = useState(false);
   const [email, setEmail] = useState("");
-  const [state, setState] = useState<"idle" | "sending" | "sent" | "error">("idle");
+  const [code, setCode] = useState("");
+  const [state, setState] = useState<
+    "idle" | "sending" | "sent" | "error" | "verifying" | "verifyError"
+  >("idle");
 
   useEffect(() => setMounted(true), []);
 
@@ -47,6 +50,17 @@ function AuthPage() {
     const { error } = await signInWithEmail(email.trim());
     setState(error ? "error" : "sent");
   };
+
+  const verify = async () => {
+    if (code.trim().length < 6) return;
+    setState("verifying");
+    const { error } = await verifyOtp(email.trim(), code.trim());
+    // Başarılıysa onAuthStateChange oturumu set eder → yukarıdaki effect
+    // kullanıcıyı /uygulama'ya götürür. Hatada kod adımında kal.
+    if (error) setState("verifyError");
+  };
+
+  const codeStep = state === "sent" || state === "verifying" || state === "verifyError";
 
   const tab = (active: boolean) =>
     "rounded-lg px-3 py-2 text-center text-sm font-medium transition-colors " +
@@ -68,21 +82,56 @@ function AuthPage() {
       <main className="flex flex-1 items-center justify-center px-5 pb-20">
         <div className="w-full max-w-md">
           <div className="panel animate-rise p-6 sm:p-8">
-            {state === "sent" ? (
-              <div className="text-center">
-                <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
-                  <Mail className="h-7 w-7" />
+            {codeStep ? (
+              <div>
+                <div className="text-center">
+                  <div className="mx-auto mb-5 flex h-14 w-14 items-center justify-center rounded-2xl bg-primary/10 text-primary">
+                    <Mail className="h-7 w-7" />
+                  </div>
+                  <h1 className="font-display text-[28px] leading-tight">
+                    E-postana kod gönderdik
+                  </h1>
+                  <p className="mt-2 text-sm text-muted-foreground">
+                    <span className="font-semibold text-foreground">{email}</span> adresine 6 haneli
+                    bir kod gönderdik. Kodu aşağıya gir. (Bilgisayardaysan e-postadaki bağlantıya da
+                    tıklayabilirsin.)
+                  </p>
                 </div>
-                <h1 className="font-display text-[28px] leading-tight">E-postanı kontrol et</h1>
-                <p className="mt-2 text-sm text-muted-foreground">
-                  <span className="font-semibold text-foreground">{email}</span> adresine giriş
-                  bağlantısı gönderdik. Bağlantıya tıkladığında hesabın açılır ve uygulamaya
-                  geçersin.
-                </p>
+
+                <div className="mt-5 space-y-2.5">
+                  <Input
+                    inputMode="numeric"
+                    autoComplete="one-time-code"
+                    maxLength={6}
+                    placeholder="6 haneli kod"
+                    value={code}
+                    onChange={(e) => setCode(e.target.value.replace(/\D/g, "").slice(0, 6))}
+                    onKeyDown={(e) => e.key === "Enter" && void verify()}
+                    className="tabular h-12 bg-surface text-center text-lg tracking-[0.4em]"
+                  />
+                  <Button
+                    className="h-12 w-full text-base font-semibold"
+                    disabled={code.length < 6 || state === "verifying"}
+                    onClick={() => void verify()}
+                  >
+                    {state === "verifying" ? "Doğrulanıyor…" : "Doğrula ve gir"}
+                    {state !== "verifying" && <ArrowRight className="ml-1.5 h-4 w-4" />}
+                  </Button>
+                </div>
+
+                {state === "verifyError" && (
+                  <p className="mt-2 text-[12px] text-destructive">
+                    Kod hatalı veya süresi dolmuş — tekrar dene ya da yeni kod iste.
+                  </p>
+                )}
+
                 <button
                   type="button"
-                  onClick={() => setState("idle")}
-                  className="mt-5 text-[13px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
+                  onClick={() => {
+                    setState("idle");
+                    setCode("");
+                  }}
+                  className="mt-5 block w-full text-center text-[13px] text-muted-foreground underline underline-offset-2 hover:text-foreground"
                 >
                   Farklı bir e-posta dene
                 </button>
@@ -102,8 +151,8 @@ function AuthPage() {
                   {isKayit ? "Hesap oluştur" : "Tekrar hoş geldin"}
                 </h1>
                 <p className="mt-1.5 text-sm text-muted-foreground">
-                  E-postana tek kullanımlık bir bağlantı göndeririz — şifre yok, ezberlenecek bir
-                  şey yok.
+                  E-postana tek kullanımlık bir kod (ve bağlantı) göndeririz — şifre yok,
+                  ezberlenecek bir şey yok.
                 </p>
 
                 <div className="mt-5 space-y-2.5">
@@ -126,8 +175,8 @@ function AuthPage() {
                     {state === "sending"
                       ? "Gönderiliyor…"
                       : isKayit
-                        ? "Kayıt bağlantısı gönder"
-                        : "Giriş bağlantısı gönder"}
+                        ? "Kayıt kodu gönder"
+                        : "Giriş kodu gönder"}
                     {state !== "sending" && <ArrowRight className="ml-1.5 h-4 w-4" />}
                   </Button>
                 </div>

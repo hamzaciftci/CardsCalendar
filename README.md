@@ -13,7 +13,10 @@ Birden fazla kredi kartı olan kullanıcıya, **hangi gün hangi kartla harcarsa
 │   ├── src/engine/           #   hesaplama motoru + 36 birim testi (TEK doğru kaynak)
 │   ├── src/routes/           #   / (vitrin) · /giris (giriş+kayıt) · /uygulama (Bugün) · Kartlarım · Takvim · Ayarlar
 │   ├── src/components/       #   CardForm, CardTile, Onboarding + shadcn/ui
-│   └── src/lib/              #   storage (localStorage), format, SSR hata katmanı
+│   ├── src/lib/              #   storage (localStorage), format, SSR hata katmanı
+│   ├── capacitor.config.ts   #   Android kabuğu yapılandırması (canlı siteyi yükler)
+│   ├── native-shell/         #   Capacitor yedek kabuğu (yükleme ekranı)
+│   └── android/              #   ⭐ Android Studio (Gradle) projesi — cap add android
 └── supabase/
     └── schema.sql            # bulut senkron fazı için hazır Postgres şeması (RLS'li)
 ```
@@ -77,6 +80,38 @@ yolunu sunar (uygulama misafir modda çalışır). Senkron kuralı: girişte bul
 kartlar yüklenir; sonraki tüm değişiklikler anında buluta yazılır.
 Faturalama (Stripe/premium) Faz 2'de eklenecek.
 
+## Android uygulaması (Capacitor)
+
+Uygulama SSR olduğu için Android kabuğu **canlı siteyi** (`server.url`) yükleyen native
+bir WebView'dir: web'deki her dağıtım APK yeniden derlemeden anında yansır.
+
+**Android Studio'da açma:**
+1. Android Studio → **Open** → `app/android` klasörünü seç.
+2. Gradle sync'in bitmesini bekle (ilk seferde SDK/bağımlılık iner).
+3. Bir emülatör ya da USB cihaz seç → **Run ▶**. Uygulama açılır ve KartPilot'u yükler.
+
+**Gereksinimler:** Android Studio (güncel), JDK 17+ (Capacitor 7), Android SDK (Studio kurar).
+appId: `com.kartpilot.app` · appName: KartPilot.
+
+**Web'de değişiklik sonrası:** kod web'e deploy edilince app otomatik günceldir. Yalnızca
+native yapılandırma (config/plugin/ikon) değişirse `cd app && npx cap sync android`.
+
+**Yerelde emülatöre karşı geliştirme (opsiyonel):** `capacitor.config.ts`'te `server.url`'i
+`http://10.0.2.2:8080` yap → `npm run dev` + `npx cap sync android` → Studio'dan çalıştır.
+Bittiğinde `server.url`'i canlı adrese geri al.
+
+> **Mobil giriş — ZORUNLU Supabase adımı:** Magic link mobilde WebView'a dönmez (link
+> Chrome'da açılır). Bu yüzden `/giris` artık e-postadaki **6 haneli kodu** kabul eder
+> (`verifyOtp`). Kodun e-postada görünmesi için Supabase → **Authentication → Email
+> Templates** → hem **Magic Link** hem **Confirm signup** şablonlarına şu satırı ekle:
+> ```
+> Giriş kodun: {{ .Token }}
+> ```
+> (Mevcut bağlantı satırı kalabilir — web'de link, mobilde kod kullanılır.)
+
+**İkon/açılış görseli (opsiyonel):** `app/` içinde bir `icon.png` (1024×1024) koyup
+`npx @capacitor/assets generate --android` ile üret; ya da Android Studio → New → Image Asset.
+
 ## Vercel kurulum notları
 
 1. Vercel → **Add New → Project** → `hamzaciftci/CardsCalendar-` deposunu içe aktar.
@@ -93,5 +128,7 @@ Faturalama (Stripe/premium) Faz 2'de eklenecek.
 - [ ] CI'da `test + typecheck + build` koş (GitHub Actions)
 - [x] Faz 1.5 (SaaS altyapısı): Supabase auth + bulut senkron kodu hazır —
       kullanıcının Supabase projesi açıp env eklemesi bekleniyor (yukarıdaki bölüm)
-- [ ] PWA manifesti + ikonlar (telefona eklenebilirlik)
-- [ ] Faz 2: Stripe/premium, push bildirimleri, ekstre/borç takibi
+- [x] Android paketleme: Capacitor ile `app/android` Gradle projesi hazır (Android Studio'da aç)
+- [ ] Mobil giriş için Supabase e-posta şablonuna `{{ .Token }}` ekle (yukarıdaki not)
+- [ ] PWA manifesti + uygulama ikonları
+- [ ] Faz 2: Stripe/premium, push bildirimleri (Capacitor push), ekstre/borç takibi

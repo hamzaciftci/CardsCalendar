@@ -1,0 +1,50 @@
+<!doctype html>
+<html lang="tr">
+  <head>
+    <meta charset="utf-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover" />
+    <title>KartPilot</title>
+    <style>
+      html,
+      body {
+        margin: 0;
+        height: 100%;
+        background: #f7f7f5;
+        color: #16181d;
+        font-family:
+          system-ui,
+          -apple-system,
+          sans-serif;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        text-align: center;
+      }
+      .wrap {
+        padding: 24px;
+      }
+      .spin {
+        width: 28px;
+        height: 28px;
+        margin: 0 auto 16px;
+        border: 2px solid #e8e8e4;
+        border-top-color: #16181d;
+        border-radius: 50%;
+        animation: s 0.8s linear infinite;
+      }
+      @keyframes s {
+        to {
+          transform: rotate(360deg);
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <!-- Yedek kabuk: Capacitor canlı siteyi (server.url) yükler. Bu ekran yalnızca
+         ağ yokken / yüklenirken görünür. -->
+    <div class="wrap">
+      <div class="spin"></div>
+      <p>KartPilot yükleniyor…</p>
+    </div>
+  </body>
+</html>
